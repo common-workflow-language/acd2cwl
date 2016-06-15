@@ -108,7 +108,7 @@ def get_cwl(acdDef):
                 outputs.append(cwl_parameter)
     acd_cwl = {'cwlVersion': 'cwl:draft-3',
             'class': 'CommandLineTool',
-            'baseCommand': acdDef.application.name,
+            'baseCommand': [acdDef.application.name, '--auto'],
             'description': acdDef.application.attributes['documentation'],
             'inputs': inputs,
             'outputs': outputs

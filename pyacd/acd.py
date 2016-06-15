@@ -45,6 +45,7 @@ class ElementWithAttributes(object):
                                                                                  self.name)
                     raise terr
             else:
+                #print "trying to set unknown property {0} to {1} in parameter {2}".format(attribute.name, attribute.value, self.name)
                 raise UnknownAcdPropertyException(attribute.name, attribute.value, self.name,
                     "trying to set unknown property {0} to {1} in parameter {2}".format(attribute.name, attribute.value,
                                                                                         self.name))
@@ -128,15 +129,19 @@ class ArrayParameter(Parameter):
                                 'tolerance': 0.01,
                                 'warnrange': True,
                                 'increment': 0,
-                                'precision': 3})
+                                'precision': 3,
+                                'trueminimum': False,
+                                'failrange': False,
+                                'rangemessage':'',
+                                'tolerance':0.01})
 
 
 parameterClasses['array'] = ArrayParameter
 
-
 class BooleanParameter(Parameter):
-    pass
-
+    def _init_attribute_defaults(self):
+        super(BooleanParameter, self)._init_attribute_defaults()
+        self.attributes.update({'default': False})
 
 parameterClasses['boolean'] = BooleanParameter
 
@@ -147,22 +152,230 @@ class FloatParameter(Parameter):
         self.attributes.update({'minimum': -sys.float_info.max,
                                 'maximum': sys.float_info.max,
                                 'increment': 1.0,
+                                'default': 0.0,
                                 'precision': 3,
-                                'warnrange': True})
-
+                                'trueminimum': False,
+                                'warnrange': True,
+                                'failrange': False,
+                                'rangemessage': '',
+                                'large': False})
 
 parameterClasses['float'] = FloatParameter
+
 
 class IntegerParameter(Parameter):
     def _init_attribute_defaults(self):
         super(IntegerParameter, self)._init_attribute_defaults()
         self.attributes.update({'minimum': -sys.maxint,
                                 'maximum': sys.maxint,
+                                'default': 0,
                                 'increment': 0,
-                                'warnrange': True})
+                                'trueminimum': False,
+                                'warnrange': True,
+                                'failrange': False,
+                                'rangemessage': '',
+                                'large': False})
 
 
 parameterClasses['integer'] = IntegerParameter
+
+class RangeParameter(Parameter):
+    def _init_attribute_defaults(self):
+        super(RangeParameter, self)._init_attribute_defaults()
+        self.attributes.update({'minimum': 1,
+                                'maximum': sys.maxint,
+                                'trueminimum': False,
+                                'warnrange': True,
+                                'failrange': False,
+                                'rangemessage': '',
+                                'size': 0,
+                                'minsize': 0})
+
+parameterClasses['range'] = RangeParameter
+
+
+class StringParameter(Parameter):
+    def _init_attribute_defaults(self):
+        super(StringParameter, self)._init_attribute_defaults()
+        self.attributes.update({'minlength': 0,
+                                'maxlength': sys.maxint,
+                                'pattern': '',
+                                'upper': False,
+                                'lower': False,
+                                'word': False})
+
+parameterClasses['string'] = StringParameter
+
+class ToggleParameter(Parameter):
+    pass
+
+parameterClasses['toggle'] = ToggleParameter
+
+class AssemblyParameter(Parameter):
+    def _init_attribute_defaults(self):
+        super(AssemblyParameter, self)._init_attribute_defaults()
+        self.attributes.update({'cbegin': 0,
+                                'cend': 0,
+                                'iformat': '',
+                                'iquery': '',
+                                'ioffset': '',
+                                'idbname': '',
+                                'entry': False,
+                                'nullok': False})
+
+parameterClasses['assembly'] = AssemblyParameter
+
+class CodonParameter(Parameter):
+    def _init_attribute_defaults(self):
+        super(CodonParameter, self)._init_attribute_defaults()
+        self.attributes.update({'name': 'Ehum.cut',
+                                'format': '',
+                                'nullok': False})
+
+parameterClasses['codon'] = CodonParameter
+
+class CPDBParameter(Parameter):
+    '''Clean PDB file'''
+    def _init_attribute_defaults(self):
+        super(CPDBParameter, self)._init_attribute_defaults()
+        self.attributes.update({'format': '',
+                                'nullok': False})
+
+parameterClasses['cpdb'] = CPDBParameter
+
+class DataFileParameter(Parameter):
+    def _init_attribute_defaults(self):
+        super(DataFileParameter, self)._init_attribute_defaults()
+        self.attributes.update({'name': '',
+                                'extension': '',
+                                'directory': '',
+                                'nullok': False})
+
+parameterClasses['datafile'] = DataFileParameter
+
+class DirectoryParameter(Parameter):
+    def _init_attribute_defaults(self):
+        super(DirectoryParameter, self)._init_attribute_defaults()
+        self.attributes.update({'fullpath': False,
+                                'nulldefault': False,
+                                'extension': '',
+                                'nullok': False})
+
+parameterClasses['directory'] = DirectoryParameter
+
+class DirListParameter(Parameter):
+    def _init_attribute_defaults(self):
+        super(DirListParameter, self)._init_attribute_defaults()
+        self.attributes.update({'fullpath': False,
+                                'extension': '',
+                                'nullok': False})
+
+parameterClasses['dirlist'] = DirListParameter
+
+class DiscreteStatesParameter(Parameter):
+    def _init_attribute_defaults(self):
+        super(DiscreteStatesParameter, self)._init_attribute_defaults()
+        self.attributes.update({'length': 0,
+                                'size': 1,
+                                'characters': '01',
+                                'nullok':False})
+
+parameterClasses['discretestates'] = DiscreteStatesParameter
+
+class DistancesParameter(Parameter):
+    '''Distance Matrix'''
+    def _init_attribute_defaults(self):
+        super(DistancesParameter, self)._init_attribute_defaults()
+        self.attributes.update({'missval': False,
+                                'size': 1,
+                                'nullok':False})
+
+parameterClasses['distances'] = DistancesParameter
+
+class FeaturesParameter(Parameter):
+    '''Readable feature table'''
+    def _init_attribute_defaults(self):
+        super(FeaturesParameter, self)._init_attribute_defaults()
+        self.attributes.update({'type': '',
+                                'entry': False,
+                                'minreads': 1,
+                                'maxreads': sys.maxint,
+                                'nullok': False,
+                                'fformat': '',
+                                'iquery': '',
+                                'ioffset': '',
+                                'fopenfile': '',
+                                'fask': False,
+                                'fbegin': 0,
+                                'fend': 0,
+                                'freverse': False,
+                                'fcircular': False})
+
+parameterClasses['features'] = FeaturesParameter
+
+class FileListParameter(Parameter):
+    '''Comma-separated file list'''
+    def _init_attribute_defaults(self):
+        super(FileListParameter, self)._init_attribute_defaults()
+        self.attributes.update({'binary': False,
+                                'nullok': False})
+
+parameterClasses['filelist'] = FileListParameter
+
+class FrequenciesParameter(Parameter):
+    '''Frequency value(s)'''
+    def _init_attribute_defaults(self):
+        super(FrequenciesParameter, self)._init_attribute_defaults()
+        self.attributes.update({'length': 0,
+                                'size': 1,
+                                'continuous': False,
+                                'genedata': False,
+                                'within': False,
+                                'nullok': False})
+
+parameterClasses['frequencies'] = FrequenciesParameter
+
+class InFileParameter(Parameter):
+    '''Input file'''
+    def _init_attribute_defaults(self):
+        super(InFileParameter, self)._init_attribute_defaults()
+        self.attributes.update({'directory': '',
+                                'trydefault': False,
+                                'binary': False,
+                                'nullok': False})
+
+parameterClasses['infile'] = InFileParameter
+
+class MatrixParameter(Parameter):
+    '''Input file'''
+    def _init_attribute_defaults(self):
+        super(MatrixParameter, self)._init_attribute_defaults()
+        self.attributes.update({'protein': True,
+                                'pname': 'EBLOSUM62',
+                                'nname': 'EDNAFULL'})
+
+parameterClasses['matrix'] = MatrixParameter
+parameterClasses['matrixf'] = MatrixParameter
+
+class PropertiesParameter(Parameter):
+    '''Input file'''
+    def _init_attribute_defaults(self):
+        super(PropertiesParameter, self)._init_attribute_defaults()
+        self.attributes.update({'length': 0,
+                                'size': '1',
+                                'characters': '',
+                                'nullok': False})
+
+parameterClasses['properties'] = PropertiesParameter
+
+class ScopParameter(Parameter):
+    '''SCOP and CATH domain classification data in DCF'''
+    def _init_attribute_defaults(self):
+        super(ScopParameter, self)._init_attribute_defaults()
+        self.attributes.update({'nullok': False,
+                                'format': ''})
+
+parameterClasses['scop'] = ScopParameter
 
 
 class ListParameter(Parameter):
@@ -271,6 +484,16 @@ class SeqOutParameter(Parameter):
                                 'type':'',
                                 'nullok':False,
                                 'nulldefault':False})
+        self.attributes.update({'osformat':'',
+                                'osextension':'',
+                                'osname':'',
+                                'osdirectory':'',
+                                'osdbname':'',
+                                'ossingle':'',
+                                'oufo':'',
+                                'offormat':'',
+                                'ofname':'',
+                                'ofdirectory':''})
 
 parameterClasses['seqout'] = SeqOutParameter
 
@@ -285,6 +508,16 @@ class SeqOutAllParameter(Parameter):
                                 'maxseqs': sys.maxint,
                                 'nullok':False,
                                 'nulldefault':False})
+        self.attributes.update({'osformat': '',
+                                'osextension': '',
+                                'osname': '',
+                                'osdirectory': '',
+                                'osdbname': '',
+                                'ossingle': '',
+                                'oufo': '',
+                                'offormat': '',
+                                'ofname': '',
+                                'ofdirectory': ''})
 
 parameterClasses['seqoutall'] = SeqOutAllParameter
 
@@ -300,6 +533,16 @@ class SeqOutSetParameter(Parameter):
                                 'aligned': False,
                                 'nullok':False,
                                 'nulldefault':False})
+        self.attributes.update({'osformat': '',
+                                'osextension': '',
+                                'osname': '',
+                                'osdirectory': '',
+                                'osdbname': '',
+                                'ossingle': '',
+                                'oufo': '',
+                                'offormat': '',
+                                'ofname': '',
+                                'ofdirectory': ''})
 
 parameterClasses['seqoutset'] = SeqOutSetParameter
 
@@ -388,6 +631,56 @@ class OutDataParameter(Parameter):
                                 'nulldefault':False})
 
 parameterClasses['outdata'] = OutDataParameter
+
+class GraphParameter(Parameter):
+    def _init_attribute_defaults(self):
+        super(GraphParameter, self)._init_attribute_defaults()
+        self.attributes.update({'sequence':False,
+                                'nullok':False,
+                                'nulldefault':False,
+                                'gprompt': False,
+                                'gdesc':'',
+                                'gtitle':'',
+                                'gsubtitle':'',
+                                'gxtitle':'',
+                                'gytitle':'',
+                                'goutfile':'',
+                                'gdirectory':''})
+
+parameterClasses['graph'] = GraphParameter
+
+class XYGraphParameter(Parameter):
+    def _init_attribute_defaults(self):
+        super(XYGraphParameter, self)._init_attribute_defaults()
+        self.attributes.update({'sequence':False,
+                                'multiple':1,
+                                'nullok':False,
+                                'nulldefault':False,
+                                'gprompt': False,
+                                'gdesc':'',
+                                'gtitle':'',
+                                'gsubtitle':'',
+                                'gxtitle':'',
+                                'gytitle':'',
+                                'goutfile':'',
+                                'gdirectory':''})
+
+parameterClasses['xygraph'] = XYGraphParameter
+
+class PatternParameter(Parameter):
+    def _init_attribute_defaults(self):
+        super(PatternParameter, self)._init_attribute_defaults()
+        self.attributes.update({'minlength':1,
+                                'maxlength':sys.maxint,
+                                'maxsize':sys.maxint,
+                                'upper':False,
+                                'lower': False,
+                                'type':'string',
+                                'pformat':'',
+                                'pmismatch':0,
+                                'pname':''})
+
+parameterClasses['pattern'] = PatternParameter
 
 
 def getParameter(name, datatype, properties):

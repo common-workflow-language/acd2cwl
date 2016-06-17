@@ -92,24 +92,55 @@ NAMESPACES_AND_SCHEMAS = {'$namespaces': {
 def get_cwl(acdDef):
     inputs = []
     outputs = []
+    parameters_count = 0
+    #loop on sections
     for section in acdDef.sections:
+        #loop on parameters
         for parameter in section.parameters:
+            parameters_count += 1
             cwl_parameter = copy.deepcopy(DATATYPES_CWL[parameter.datatype])
             cwl_parameter['id'] = parameter.name
             cwl_parameter['label'] = parameter.attributes['information'] if parameter.attributes['information']!='' else parameter.attributes['prompt']
             cwl_parameter['description'] = parameter.attributes['help'] or cwl_parameter['label']
+            #loop on parameter qualifiers
+            for name, default_value in parameter.qualifiers.iteritems():
+                qual_id = name + str(parameters_count)
+                if default_value==0:
+                    cwl_qual_parameter = copy.deepcopy(DATATYPES_CWL['integer'])
+                elif type(default_value)==str:
+                    cwl_qual_parameter = copy.deepcopy(DATATYPES_CWL['string'])
+                elif default_value==False:
+                    cwl_qual_parameter = copy.deepcopy(DATATYPES_CWL['boolean'])
+                #qualifiers are always optional
+                cwl_qual_parameter['type'] = ["null", cwl_qual_parameter['type']]
+                cwl_qual_parameter['id'] = qual_id
+                cwl_qual_parameter['label'] = name
+                #cwl_qual_parameter['default'] = default_value
+                if name=='osname':
+                    cwl_qual_parameter['default'] = 'output'
+                    default_format = parameter.qualifiers['osformat']
+                    cwl_parameter['outputBinding'] = {'glob':'$(inputs.osformat' + str(parameters_count) +
+                                                             '==null ? (inputs.osname' + str(parameters_count) +
+                                                             ' + ".fasta") : (inputs.osname' + str(parameters_count) +
+                                                             ' + "." + inputs.osformat' + str(parameters_count) + '))'}
+                cwl_qual_parameter['inputBinding'] = {'prefix': '--' + name,
+                                                 'position': len(inputs) + 1}
+                inputs.append(cwl_qual_parameter)
             if DATATYPES[parameter.datatype] == 'input':
                 cwl_parameter['inputBinding'] = {'prefix': '--' + parameter.name,
                                                  'position': len(inputs) + 1}
-                cwl_parameter['default'] = parameter.attributes['default']
+                if not(parameter.attributes['standard']==True or parameter.attributes['parameter']==True):
+                    # define if the qualifier is mandatory based on the standard or parameter attributes
+                    cwl_parameter['type'] = ["null", cwl_parameter['type']]
+                #cwl_parameter['default'] = parameter.attributes['default']
                 inputs.append(cwl_parameter)
             else:
-                cwl_parameter['outputBinding'] = {}
                 outputs.append(cwl_parameter)
     acd_cwl = {'cwlVersion': 'cwl:draft-3',
             'class': 'CommandLineTool',
             'baseCommand': [acdDef.application.name, '--auto'],
             'description': acdDef.application.attributes['documentation'],
+            'requirements': [{'class': 'InlineJavascriptRequirement'}],
             'inputs': inputs,
             'outputs': outputs
             }

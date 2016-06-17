@@ -20,7 +20,7 @@ def main():
         try:
             print "processing file {0}...".format(file)
             acd_object = parser.parse_acd(open(file,'r').read())
-            print dump(get_cwl(acd_object), open(os.path.join(args.destination, os.path.basename(file)+'.cwl'),'w'),
+            dump(get_cwl(acd_object), open(os.path.join(args.destination, os.path.basename(file)+'.cwl'),'w'),
                        default_flow_style=False)
         except ParseException as pexc:
             print "Error while parsing file {0}: {1}".format(file, pexc)

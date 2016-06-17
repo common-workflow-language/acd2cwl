@@ -1,5 +1,26 @@
 import sys
 
+SEQUENCE_FORMATS = {
+    'abi':{'try':True, 'Nuc':True, 'Pro': True, 'Feat':False, 'Gap': True, 'Mset': False,
+           'description': 'ABI trace file'},
+    'acedb': {'try': True, 'Nuc': True, 'Pro': True, 'Feat': False, 'Gap': True, 'Mset': False,
+              'description': 'ACEDB sequence format'},
+    'clustal': {'try': True, 'Nuc': True, 'Pro': True, 'Feat': False, 'Gap': True, 'Mset': False,
+                'description': 'Clustalw output format'},
+    'codata': {'try': True, 'Nuc': True, 'Pro': True, 'Feat': True, 'Gap': True, 'Mset': False,
+               'description': 'CODATA entry format'},
+    'dbid': {'try': False, 'Nuc': True, 'Pro': True, 'Feat': False, 'Gap': True, 'Mset': False,
+             'description': 'FASTA format variant with database name before ID'},
+    'embl': {'try': True, 'Nuc': True, 'Pro': False, 'Feat': True, 'Gap': True, 'Mset': False,
+             'description': 'EMBL entry format'},
+    'experiment': {'try': True, 'Nuc': True, 'Pro': True, 'Feat': False, 'Gap': True, 'Mset': False,
+             'description': 'Staden experiment file'},
+    'fasta': {'try': True, 'Nuc': True, 'Pro': True, 'Feat': False, 'Gap': True, 'Mset': False,
+                   'description': 'FASTA format including NCBI-style IDs'},
+    'fastq': {'try': True, 'Nuc': True, 'Pro': False, 'Feat': False, 'Gap': False, 'Mset': False,
+              'description': 'Fastq short read format ignoring quality scores'},
+}
+
 class Acd(object):
     def __init__(self, application=None, sections=[]):
         self.application = application
@@ -45,7 +66,6 @@ class ElementWithAttributes(object):
                                                                                  self.name)
                     raise terr
             else:
-                #print "trying to set unknown property {0} to {1} in parameter {2}".format(attribute.name, attribute.value, self.name)
                 raise UnknownAcdPropertyException(attribute.name, attribute.value, self.name,
                     "trying to set unknown property {0} to {1} in parameter {2}".format(attribute.name, attribute.value,
                                                                                         self.name))
@@ -112,7 +132,7 @@ class Parameter(ElementWithAttributes):
                            'features': '',
                            'default': '',
                            }
-
+        self.qualifiers = {}
 
 parameterClasses = {}
 
@@ -414,6 +434,24 @@ class SequenceParameter(Parameter):
                                 'features': False,
                                 'entry': False,
                                 'nullok': False})
+        self.qualifiers.update({'sbegin': 0,
+                                'send': 0,
+                                'sreverse': False,
+                                'sask': False,
+                                'snucleotide': False,
+                                'sprotein': False,
+                                'slower': False,
+                                'supper': False,
+                                'scircular': False,
+                                'squick': False,
+                                'sformat': '',
+                                'iquery': '',
+                                'ioffset': 0,
+                                'sdbname': '',
+                                'sid': '',
+                                'ufo': '',
+                                'fformat': '',
+                                'fopenfile': ''})
 
 parameterClasses['sequence'] = SequenceParameter
 
@@ -426,6 +464,24 @@ class SeqAllParameter(Parameter):
                                 'minseqs': 1,
                                 'maxseqs': sys.maxint,
                                 'nullok': False})
+        self.qualifiers.update({'sbegin': 0,
+                                'send': 0,
+                                'sreverse': False,
+                                'sask': False,
+                                'snucleotide': False,
+                                'sprotein': False,
+                                'slower': False,
+                                'supper': False,
+                                'scircular': False,
+                                'squick': False,
+                                'sformat': '',
+                                'iquery': '',
+                                'ioffset': 0,
+                                'sdbname': '',
+                                'sid': '',
+                                'ufo': '',
+                                'fformat': '',
+                                'fopenfile': ''})
 
 parameterClasses['seqall'] = SeqAllParameter
 
@@ -439,6 +495,24 @@ class SeqSetParameter(Parameter):
                                 'minseqs': 1,
                                 'maxseqs': sys.maxint,
                                 'nullok': False})
+        self.qualifiers.update({'sbegin': 0,
+                                'send': 0,
+                                'sreverse': False,
+                                'sask': False,
+                                'snucleotide': False,
+                                'sprotein': False,
+                                'slower': False,
+                                'supper': False,
+                                'scircular': False,
+                                'squick': False,
+                                'sformat': '',
+                                'iquery': '',
+                                'ioffset': 0,
+                                'sdbname': '',
+                                'sid': '',
+                                'ufo': '',
+                                'fformat': '',
+                                'fopenfile': ''})
 
 parameterClasses['seqset'] = SeqSetParameter
 
@@ -454,6 +528,24 @@ class SeqSetAllParameter(Parameter):
                                 'minsets': 1,
                                 'maxsets': sys.maxint,
                                 'nullok': False})
+        self.qualifiers.update({'sbegin': 0,
+                                'send': 0,
+                                'sreverse': False,
+                                'sask': False,
+                                'snucleotide': False,
+                                'sprotein': False,
+                                'slower': False,
+                                'supper': False,
+                                'scircular': False,
+                                'squick': False,
+                                'sformat': '',
+                                'iquery': '',
+                                'ioffset': 0,
+                                'sdbname': '',
+                                'sid': '',
+                                'ufo': '',
+                                'fformat': '',
+                                'fopenfile': ''})
 
 parameterClasses['seqsetall'] = SeqSetAllParameter
 
@@ -484,12 +576,12 @@ class SeqOutParameter(Parameter):
                                 'type':'',
                                 'nullok':False,
                                 'nulldefault':False})
-        self.attributes.update({'osformat':'',
+        self.qualifiers.update({'osformat':'',
                                 'osextension':'',
                                 'osname':'',
                                 'osdirectory':'',
                                 'osdbname':'',
-                                'ossingle':'',
+                                'ossingle':False,
                                 'oufo':'',
                                 'offormat':'',
                                 'ofname':'',
@@ -508,12 +600,12 @@ class SeqOutAllParameter(Parameter):
                                 'maxseqs': sys.maxint,
                                 'nullok':False,
                                 'nulldefault':False})
-        self.attributes.update({'osformat': '',
+        self.qualifiers.update({'osformat': 'fasta',
                                 'osextension': '',
                                 'osname': '',
                                 'osdirectory': '',
                                 'osdbname': '',
-                                'ossingle': '',
+                                'ossingle': False,
                                 'oufo': '',
                                 'offormat': '',
                                 'ofname': '',
@@ -533,12 +625,12 @@ class SeqOutSetParameter(Parameter):
                                 'aligned': False,
                                 'nullok':False,
                                 'nulldefault':False})
-        self.attributes.update({'osformat': '',
+        self.qualifiers.update({'osformat': '',
                                 'osextension': '',
                                 'osname': '',
                                 'osdirectory': '',
                                 'osdbname': '',
-                                'ossingle': '',
+                                'ossingle': False,
                                 'oufo': '',
                                 'offormat': '',
                                 'ofname': '',

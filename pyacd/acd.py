@@ -1130,6 +1130,7 @@ class SeqOutAllParameter(Parameter):
                                 'type':'',
                                 'minseqs': 1,
                                 'maxseqs': sys.maxint,
+                                'aligned': False,
                                 'nullok':False,
                                 'nulldefault':False})
         self.qualifiers.update({'osformat': 'fasta',

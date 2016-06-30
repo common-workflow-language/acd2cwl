@@ -48,6 +48,8 @@ class AcdParser(object):
 
         self.application.setParseAction(get_application)
         self.acd = self.application('application') + self.sections_list('sections')
+        # ignore ACD comments (starting with a '#')
+        self.acd.ignore("#" + restOfLine)
 
         def get_acd(token):
             return Acd(token['application'], token['sections'])

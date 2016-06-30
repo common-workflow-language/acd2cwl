@@ -1,4 +1,4 @@
-from .acd import getParameter, Attribute, Section, Application, Acd
+from .acd import getParameter, Attribute, Section, Application, Acd, PARAMETER_CLASSES
 from pyparsing import *
 
 
@@ -16,15 +16,7 @@ class AcdParser(object):
 
         self.attributes_list = Group(ZeroOrMore(self.attribute)).setResultsName('attributes')
 
-        self.datatype = oneOf(["array", "boolean", "integer", "float", "range", "regexp", "pattern", "string", "toggle",
-                               "codon", "cpdb", "datafile", "directory", "dirlist", "discretestates", "distances",
-                               "features", "filelist", "frequencies", "infile", "matrix", "matrixf", "properties",
-                               "scop", "sequence", "seqall", "seqset", "seqsetall", "tree",
-                               "align", "featout", "outcodon", "outdata", "outdir", "outdiscrete", "outdistance",
-                               "outfile", "outfileall", "outfreq", "outmatrix", "outmatrixf", "outproperties",
-                               "outscop", "outtree", "report", "seqout", "seqoutall", "seqoutset",
-                               "list", "selection",
-                               "graph", "xygraph"])
+        self.datatype = oneOf(PARAMETER_CLASSES.keys())
         self.parameter = Group(self.datatype('datatype') + Suppress(":") + self.name('name') + Suppress("[") +
                                self.attributes_list('properties') + Suppress("]"))
 

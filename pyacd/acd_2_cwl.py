@@ -1,39 +1,8 @@
 import copy
 
-from .acd import parameterClasses
+from .acd import PARAMETER_CLASSES, SEQUENCE_FORMATS
 
-DATATYPES = {'array': 'input',
-             'boolean': 'input',
-             'integer': 'input',
-             'float': 'input',
-             'range': 'input',
-             'regexp': 'input',
-             'pattern': 'input',
-             'string': 'input',
-             'toggle': 'input',
-             'codon': 'input',
-             'cpdb': 'input',
-             'datafile': 'input',
-             'directory': 'input',
-             'dirlist': 'input',
-             'discretestates': 'input',
-             'distances': 'input',
-             'features': 'input',
-             'filelist': 'input',
-             'frequencies': 'input',
-             'infile': 'input', 'matrix': 'input', 'matrixf': 'input',
-             'properties': 'input',
-             'scop': 'input', 'sequence': 'input', 'seqall': 'input', 'seqset': 'input', 'seqsetall': 'input',
-             'tree': 'input',
-             'list': 'input', 'selection': 'input',
-             'align': 'output', 'featout': 'output', 'outcodon': 'output', 'outdata': 'output', 'outdir': 'output',
-             'outdiscrete': 'output',
-             'outdistance': 'output',
-             'outfile': 'output', 'outfileall': 'output', 'outfreq': 'output', 'outmatrix': 'output',
-             'outmatrixf': 'output', 'outproperties': 'output',
-             'outscop': 'output', 'outtree': 'output', 'report': 'output', 'seqout': 'output', 'seqoutall': 'output',
-             'seqoutset': 'output',
-             'graph': 'output', 'xygraph': 'output'}
+DATATYPES = {type_key: parameter_class.type for type_key, parameter_class in PARAMETER_CLASSES.iteritems()}
 
 DATATYPES_CWL = {'array': {'type': 'array', 'item': 'int'},
                  'boolean': {'type': 'boolean'},
@@ -56,12 +25,31 @@ DATATYPES_CWL = {'array': {'type': 'array', 'item': 'int'},
                  'frequencies': {'type': 'File'},
                  'infile': {'type': 'File'},
                  'matrix': {'type': 'File'}, 'matrixf': {'type': 'File'},
+                 'obo': {'type': 'File'},
                  'properties': {'type': 'File'},
                  'scop': {'type': 'File'}, 'sequence': {'type': 'File'}, 'seqall': {'type': 'File'},
                  'seqset': {'type': 'File'}, 'seqsetall': {'type': 'File'},
                  'tree': {'type': 'File'},
                  'list': {'type': 'File'}, 'selection': {'type': 'File'},
-                 'align': {'type': 'File'}, 'featout': {'type': 'File'}, 'outcodon': {'type': 'File'},
+                 'align': {'type': 'File'},
+                 'featout': {'type': 'File'},
+                 'outobo': {'type': 'File'},
+                 'outresource': {'type': 'File'},
+                 'xml': {'type': 'File'},
+                 'outxml': {'type': 'File'},
+                 'outassembly': {'type': 'File'},
+                 'url': {'type': 'File'},
+                 'outurl': {'type': 'File'},
+                 'taxon': {'type': 'File'},
+                 'outtaxon': {'type': 'File'},
+                 'resource': {'type': 'File'},
+                 'text': {'type': 'File'},
+                 'outtext': {'type': 'File'},
+                 'refseq': {'type': 'File'},
+                 'outrefseq': {'type': 'File'},
+                 'variation': {'type': 'File'},
+                 'outvariation': {'type': 'File'},
+                 'outcodon': {'type': 'File'},
                  'outdata': {'type': 'File'}, 'outdir': {'type': 'File'},
                  'outdiscrete': {'type': 'File'},
                  'outdistance': {'type': 'File'},
@@ -71,6 +59,7 @@ DATATYPES_CWL = {'array': {'type': 'array', 'item': 'int'},
                  'outscop': {'type': 'File'}, 'outtree': {'type': 'File'}, 'report': {'type': 'File'},
                  'seqout': {'type': 'File'}, 'seqoutall': {'type': 'File'},
                  'seqoutset': {'type': 'File'},
+                 'assembly': {'type': 'File'},
                  'graph': {'type': 'File'}, 'xygraph': {'type': 'File'}}
 
 NAMESPACES_AND_SCHEMAS = {'$namespaces': {
@@ -88,6 +77,9 @@ NAMESPACES_AND_SCHEMAS = {'$namespaces': {
     'http://www.w3.org/ns/dcat.rdf',
     'http://edamontology.org/EDAM.owl']
 }
+
+input_sequence_formats = { format_name: SEQUENCE_FORMATS[format_name] for format_name in SEQUENCE_FORMATS.keys() if SEQUENCE_FORMATS[format_name].get('input')==True}
+output_sequence_formats = { format_name: SEQUENCE_FORMATS[format_name] for format_name in SEQUENCE_FORMATS.keys()  if SEQUENCE_FORMATS[format_name].get('output')==True}
 
 def get_cwl(acdDef):
     inputs = []
@@ -111,11 +103,13 @@ def get_cwl(acdDef):
                     cwl_qual_parameter = copy.deepcopy(DATATYPES_CWL['string'])
                 elif default_value==False:
                     cwl_qual_parameter = copy.deepcopy(DATATYPES_CWL['boolean'])
-                #qualifiers are always optional
-                cwl_qual_parameter['type'] = ["null", cwl_qual_parameter['type']]
                 cwl_qual_parameter['id'] = qual_id
                 cwl_qual_parameter['label'] = name
                 #cwl_qual_parameter['default'] = default_value
+                if name=='osformat':
+                    cwl_qual_parameter['type'] = {'type':'enum','symbols': output_sequence_formats.keys()}
+                    #line below is a workaround to https://github.com/common-workflow-language/cwltool/issues/101
+                    cwl_qual_parameter['type']['name'] = cwl_qual_parameter['id'] + '_type'
                 if name=='osname':
                     cwl_qual_parameter['default'] = 'output'
                     default_format = parameter.qualifiers['osformat']
@@ -125,6 +119,9 @@ def get_cwl(acdDef):
                                                              ' + "." + inputs.osformat' + str(parameters_count) + '))'}
                 cwl_qual_parameter['inputBinding'] = {'prefix': '--' + name,
                                                  'position': len(inputs) + 1}
+                # qualifiers are always optional
+                cwl_qual_parameter['type'] = ["null", cwl_qual_parameter['type']]
+                # append qualifier to the list of accepted input formats
                 inputs.append(cwl_qual_parameter)
             if DATATYPES[parameter.datatype] == 'input':
                 cwl_parameter['inputBinding'] = {'prefix': '--' + parameter.name,
@@ -151,4 +148,4 @@ def get_cwl(acdDef):
 def print_datatype_parameter_class_mapping():
     for datatype in DATATYPES:
         print
-        datatype, parameterClasses.get(datatype, None)
+        datatype, PARAMETER_CLASSES.get(datatype, None)

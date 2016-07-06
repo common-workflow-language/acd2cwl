@@ -1,6 +1,6 @@
 import copy
 
-from .acd import PARAMETER_CLASSES, SEQUENCE_FORMATS
+from .acd import PARAMETER_CLASSES, SEQUENCE_FORMATS, INPUT, OUTPUT
 
 DATATYPES = {type_key: parameter_class.type for type_key, parameter_class in PARAMETER_CLASSES.iteritems()}
 
@@ -123,7 +123,7 @@ def get_cwl(acdDef):
                 cwl_qual_parameter['type'] = ["null", cwl_qual_parameter['type']]
                 # append qualifier to the list of accepted input formats
                 inputs.append(cwl_qual_parameter)
-            if DATATYPES[parameter.datatype] == 'input':
+            if DATATYPES[parameter.datatype] == INPUT:
                 cwl_parameter['inputBinding'] = {'prefix': '--' + parameter.name,
                                                  'position': len(inputs) + 1}
                 if not(parameter.attributes['standard']==True or parameter.attributes['parameter']==True):

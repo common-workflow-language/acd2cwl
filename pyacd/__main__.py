@@ -1,7 +1,6 @@
 import sys
 import os
 import argparse
-import glob
 
 from yaml import dump
 from pyparsing import ParseException
@@ -12,11 +11,11 @@ from .acd_2_cwl import get_cwl, print_datatype_parameter_class_mapping
 
 def main():
     arg_parser = argparse.ArgumentParser(description='EMBOSS ACD file parser')
-    arg_parser.add_argument('--files', help="ACD files to process")
-    arg_parser.add_argument('--destination', help="directory to store the CWL files to")
+    arg_parser.add_argument('files', help="ACD files to process", nargs='+')
+    arg_parser.add_argument('--destination', help="directory to store the CWL files to", default='/tmp')
     args = arg_parser.parse_args()
     parser = AcdParser()
-    for file in glob.glob(args.files):
+    for file in args.files:
         try:
             print "processing file {0}...".format(file)
             acd_object = parser.parse_acd(open(file,'r').read())

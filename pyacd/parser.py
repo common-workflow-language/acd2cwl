@@ -1,87 +1,87 @@
+"""
+  parser module for EMBOSS ACD files
+"""
 from .acd import getParameter, Attribute, Section, Application, Acd, PARAMETER_CLASSES
-from pyparsing import *
+from pyparsing import Word, QuotedString, Group, ZeroOrMore, oneOf, Suppress, restOfLine, alphanums
 
+NAME = Word(alphanums)
+VALUE = QuotedString('"', multiline=True)
 
-class AcdParser(object):
-    def __init__(self):
-        self.name = Word(alphanums)
-        self.value = QuotedString('"', multiline=True)
+ATTRIBUTE = NAME('name') + Suppress(':') + VALUE('value')
+def _get_attribute(tokens):
+    """ return Attribute object from tokens """
+    return Attribute(name=tokens['name'], value=tokens.get('value', ''))
+ATTRIBUTE.setParseAction(_get_attribute)
+ATTRIBUTES_LIST = Group(ZeroOrMore(ATTRIBUTE)).setResultsName('attributes')
 
-        self.attribute = self.name('name') + Suppress(':') + self.value('value')
+DATATYPE = oneOf(PARAMETER_CLASSES.keys())
+PARAMETER = Group(DATATYPE('datatype') + Suppress(":") + NAME('name') + Suppress("[") +
+                  ATTRIBUTES_LIST('properties') + Suppress("]"))
+def _get_parameter(tokens):
+    """ return Parameter object from tokens """
+    token = tokens[0]
+    return getParameter(token['name'], token['datatype'], token['properties'])
+PARAMETER.setParseAction(_get_parameter)
+PARAMETERS_LIST = Group(ZeroOrMore(PARAMETER)).setResultsName('parameters')
 
-        def get_attribute(t):
-            return Attribute(name=t['name'], value=t.get('value', ''))
+SECTION = Group(
+    Suppress("section:") + NAME('name') + Suppress("[")
+    + ATTRIBUTES_LIST('properties') + Suppress("]") + \
+    PARAMETERS_LIST('parameters') + Suppress("endsection:") + Suppress(NAME))
+def _get_section(tokens):
+    """ return Section object from tokens """
+    token = tokens[0]
+    return Section(token['name'], properties=token['properties'],
+                   parameters=token['parameters'])
+SECTION.setParseAction(_get_section)
+SECTIONS_LIST = Group(ZeroOrMore(SECTION))
 
-        self.attribute.setParseAction(get_attribute)
+APPLICATION = Suppress("application") + ":" + NAME('name') + Suppress("[") \
+              + ATTRIBUTES_LIST('properties') + Suppress("]")
+def _get_application(tokens):
+    """ return Application object from tokens """
+    return Application(tokens['name'], attributes=tokens['properties'])
+APPLICATION.setParseAction(_get_application)
 
-        self.attributes_list = Group(ZeroOrMore(self.attribute)).setResultsName('attributes')
+ACD = APPLICATION('application') + SECTIONS_LIST('sections')
+# ignore ACD comments (starting with a '#')
+ACD.ignore("#" + restOfLine)
+def _get_acd(token):
+    """ return Acd object from tokens """
+    return Acd(token['application'], token['sections'])
+ACD.setParseAction(_get_acd)
 
-        self.datatype = oneOf(PARAMETER_CLASSES.keys())
-        self.parameter = Group(self.datatype('datatype') + Suppress(":") + self.name('name') + Suppress("[") +
-                               self.attributes_list('properties') + Suppress("]"))
+def parse_attribute(string):
+    """ parse ACD attribute """
+    return ATTRIBUTE.parseString(string)[0]
 
-        def get_parameter(tokens):
-            token = tokens[0]
-            return getParameter(token['name'], token['datatype'], token['properties'])
+def parse_attributes(string):
+    """ parse ACD attributes list """
+    results = ATTRIBUTES_LIST.parseString(string)[0]
+    return [item for item in results]
 
-        self.parameter.setParseAction(get_parameter)
+def parse_parameter(string):
+    """ parse parameter """
+    return PARAMETER.parseString(string)[0]
 
-        self.parameters_list = Group(ZeroOrMore(self.parameter)).setResultsName('parameters')
+def parse_parameters(string):
+    """ parse parameters list """
+    results = PARAMETERS_LIST.parseString(string)[0]
+    return [item for item in results]
 
-        self.section = Group(
-            Suppress("section:") + self.name('name') + Suppress("[") + self.attributes_list('properties') + Suppress(
-                "]") + \
-            self.parameters_list('parameters') + Suppress("endsection:") + Suppress(self.name))
+def parse_application(string):
+    """ parse application """
+    return APPLICATION.parseString(string)[0]
 
-        def get_section(tokens):
-            token = tokens[0]
-            return Section(token['name'], properties=token['properties'], parameters=token['parameters'])
+def parse_section(string):
+    """ parse section """
+    return SECTION.parseString(string)[0]
 
-        self.section.setParseAction(get_section)
-        self.sections_list = Group(ZeroOrMore(self.section))
-        self.application = Suppress("application") + ":" + self.name('name') + Suppress("[") + self.attributes_list(
-            'properties') + Suppress("]")
+def parse_sections(string):
+    """ parse sections list """
+    results = SECTIONS_LIST.parseString(string)[0]
+    return [item for item in results]
 
-        def get_application(s, l, t):
-            r = Application(t['name'], attributes=t['properties'])
-            return r
-
-        self.application.setParseAction(get_application)
-        self.acd = self.application('application') + self.sections_list('sections')
-        # ignore ACD comments (starting with a '#')
-        self.acd.ignore("#" + restOfLine)
-
-        def get_acd(token):
-            return Acd(token['application'], token['sections'])
-
-        self.acd.setParseAction(get_acd)
-
-    def parse_attribute(self, string):
-        return self.attribute.parseString(string)[0]
-
-    def parse_attributes_list(self, string):
-        r = self.attributes_list.parseString(string)[0]
-        attributes_list = [item for item in r]
-        return attributes_list
-
-    def parse_parameter(self, string):
-        return self.parameter.parseString(string)[0]
-
-    def parse_parameters_list(self, string):
-        r = self.parameters_list.parseString(string)[0]
-        parameters_list = [item for item in r]
-        return parameters_list
-
-    def parse_application(self, string):
-        return self.application.parseString(string)[0]
-
-    def parse_section(self, string):
-        return self.section.parseString(string)[0]
-
-    def parse_sections(self, string):
-        r = self.sections_list.parseString(string)[0]
-        sections_list = [item for item in r]
-        return sections_list
-
-    def parse_acd(self, string):
-        return self.acd.parseString(string)[0]
+def parse_acd(string):
+    """ parse Acd """
+    return ACD.parseString(string)[0]

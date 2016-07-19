@@ -1,20 +1,21 @@
 import unittest
-from pyacd.parser import AcdParser
+from pyacd.parser import parse_attribute, parse_attributes, parse_parameter, \
+    parse_parameters, parse_section, parse_sections, parse_application, parse_acd
 from pyacd import acd
 
 class TestParser(unittest.TestCase):
 
-    def setUp(self):
-        #instanciate parser
-        self.parser = AcdParser()
+    # def setUp(self):
+    #     #instanciate parser
+    #     self.parser = AcdParser()
 
     def test_parse_attribute(self):
-        attribute = self.parser.parse_attribute('documentation: "Read and write (return) sequences"')
+        attribute = parse_attribute('documentation: "Read and write (return) sequences"')
         self.assertEqual(attribute.name, 'documentation')
         self.assertEqual(attribute.value,'Read and write (return) sequences')
 
     def test_parse_attributes_list(self):
-        attributes_list = self.parser.parse_attributes_list("""
+        attributes_list = parse_attributes("""
             groups: "Data retrieval, Edit"
             relations: "EDAM_topic:0090 Data search and retrieval"
             relations: "EDAM_operation:1813 Sequence retrieval"
@@ -26,7 +27,7 @@ class TestParser(unittest.TestCase):
         self.assertEqual(attributes_list[1].value, 'EDAM_topic:0090 Data search and retrieval')
 
     def test_parse_parameter(self):
-        parameter = self.parser.parse_parameter("""
+        parameter = parse_parameter("""
             string: myparameter [
             information: "parameter information"
             prompt: "test prompt"
@@ -38,28 +39,28 @@ class TestParser(unittest.TestCase):
         self.assertEqual(parameter.attributes['prompt'], 'test prompt')
 
     def test_parse_boolean_values(self):
-        parameter = self.parser.parse_parameter("""
+        parameter = parse_parameter("""
             string: myparameter [
             needed: "yes"
             additional: "no"
         ]""")
         self.assertEqual(parameter.attributes['needed'], True)
         self.assertEqual(parameter.attributes['additional'], False)
-        parameter = self.parser.parse_parameter("""
+        parameter = parse_parameter("""
             string: myparameter [
             needed: "Y"
             additional: "N"
         ]""")
         self.assertEqual(parameter.attributes['needed'], True)
         self.assertEqual(parameter.attributes['additional'], False)
-        parameter = self.parser.parse_parameter("""
+        parameter = parse_parameter("""
             string: myparameter [
             needed: "y"
             additional: "n"
         ]""")
         self.assertEqual(parameter.attributes['needed'], True)
         self.assertEqual(parameter.attributes['additional'], False)
-        parameter = self.parser.parse_parameter("""
+        parameter = parse_parameter("""
             string: myparameter [
             needed: "true"
             additional: "false"
@@ -67,14 +68,14 @@ class TestParser(unittest.TestCase):
         self.assertEqual(parameter.attributes['needed'], True)
         self.assertEqual(parameter.attributes['additional'], False)
         def bad_value_parse():
-            self.parser.parse_parameter("""
+            parse_parameter("""
                 string: myparameter [
                 needed: "W"
             ]""")
         self.assertRaises(acd.InvalidAcdPropertyValue, bad_value_parse)
 
-    def test_parse_parameters_list(self):
-        parameters_list = self.parser.parse_parameters_list("""
+    def test_parse_parameters(self):
+        parameters_list = parse_parameters("""
         string: myparameter [
             information: "parameter information"
         ]
@@ -88,7 +89,7 @@ class TestParser(unittest.TestCase):
         self.assertIsInstance(parameters_list[1], acd.Parameter)
 
     def test_parse_section(self):
-        section = self.parser.parse_section("""
+        section = parse_section("""
         section: input [
               information: "Input section"
               type: "page"
@@ -111,7 +112,7 @@ class TestParser(unittest.TestCase):
         self.assertEqual(section.name,"input")
 
     def test_parse_application(self):
-        application = self.parser.parse_application("""
+        application = parse_application("""
             application: seqret [
               documentation: "Read and write (return) sequences"
               groups: "Data retrieval, Edit"
@@ -128,7 +129,7 @@ class TestParser(unittest.TestCase):
                                                                'EDAM_operation:2121 Sequence file processing'])
 
     def test_parse_acd(self):
-        my_acd = self.parser.parse_acd("""
+        my_acd = parse_acd("""
         application: seqret [
           documentation: "Read and write (return) sequences"
           groups: "Data retrieval, Edit"

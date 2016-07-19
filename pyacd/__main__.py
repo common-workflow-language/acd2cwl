@@ -2,10 +2,10 @@ import sys
 import os
 import argparse
 
-from yaml import dump
+from ruamel.yaml import dump
 from pyparsing import ParseException
 
-from .parser import AcdParser
+from .parser import parse_acd
 from .acd import UnknownAcdPropertyException
 from .acd_2_cwl import get_cwl, print_datatype_parameter_class_mapping
 
@@ -14,11 +14,10 @@ def main():
     arg_parser.add_argument('files', help="ACD files to process", nargs='+')
     arg_parser.add_argument('--destination', help="directory to store the CWL files to", default='/tmp')
     args = arg_parser.parse_args()
-    parser = AcdParser()
     for file in args.files:
         try:
             print "processing file {0}...".format(file)
-            acd_object = parser.parse_acd(open(file,'r').read())
+            acd_object = parse_acd(open(file,'r').read())
             dump(get_cwl(acd_object), open(os.path.join(args.destination, os.path.basename(file)+'.cwl'),'w'),
                        default_flow_style=False)
         except ParseException as pexc:

@@ -138,6 +138,7 @@ def get_cwl(acdDef):
             'baseCommand': [acdDef.application.name, '--auto'],
             'description': acdDef.application.attributes['documentation'],
             'requirements': [{'class': 'InlineJavascriptRequirement'}],
+            'doap:homepage':'http://emboss.sf.net',
             'inputs': inputs,
             'outputs': outputs
             }

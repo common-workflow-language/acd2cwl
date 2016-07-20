@@ -1,7 +1,7 @@
 """
   parser module for EMBOSS ACD files
 """
-from .acd import getParameter, Attribute, Section, Application, Acd, PARAMETER_CLASSES
+from .acd import get_parameter, Attribute, Section, Application, Acd, PARAMETER_CLASSES
 from pyparsing import Word, QuotedString, Group, ZeroOrMore, oneOf, Suppress, restOfLine, alphanums
 
 NAME = Word(alphanums)
@@ -20,7 +20,7 @@ PARAMETER = Group(DATATYPE('datatype') + Suppress(":") + NAME('name') + Suppress
 def _get_parameter(tokens):
     """ return Parameter object from tokens """
     token = tokens[0]
-    return getParameter(token['name'], token['datatype'], token['properties'])
+    return get_parameter(token['name'], token['datatype'], token['properties'])
 PARAMETER.setParseAction(_get_parameter)
 PARAMETERS_LIST = Group(ZeroOrMore(PARAMETER)).setResultsName('parameters')
 

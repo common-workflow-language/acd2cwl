@@ -1,148 +1,456 @@
+"""
+The acd module defines an object model for ACD files contents
+"""
+# pylint: disable=too-few-public-methods
 import sys
 
 SEQUENCE_FORMATS = {
-    'abi':{'try':True, 'Nuc':True, 'Pro': True, 'Feat':False, 'Gap': True, 'Mset': False,
-           'description': 'ABI trace file', 'input':True},
-    'acedb': {'try': True, 'Nuc': True, 'Pro': True, 'Feat': False, 'Gap': True, 'Mset': False,
-              'description': 'ACEDB sequence format', 'input':True, 'output':True, 'Sngl': False, 'Save': False},
-    'asn1': {'Nuc': True, 'Pro': True, 'Feat': False, 'Gap': True, 'Mset': False,
-              'description': 'NCBI ASN.1 format', 'input': True, 'output': True, 'Sngl': False, 'Save': False},
-    'clustal': {'try': True, 'Nuc': True, 'Pro': True, 'Feat': False, 'Gap': True, 'Mset': False,
-                'description': 'Clustalw output format', 'input':True, 'output':True, 'Sngl': False, 'Save': True},
-    'codata': {'try': True, 'Nuc': True, 'Pro': True, 'Feat': True, 'Gap': True, 'Mset': False,
-               'description': 'CODATA entry format', 'input':True, 'output':True, 'Sngl': False, 'Save': False},
-    'das': {'Nuc': True, 'Pro': True, 'Feat': False, 'Gap': True, 'Mset': False,
-              'description': 'DASSEQUENCE DAS any sequence', 'input': False, 'output': True, 'Sngl': False, 'Save': False},
-    'dasdna': {'Nuc': True, 'Pro': False, 'Feat': False, 'Gap': True, 'Mset': False,
-              'description': 'DASDNA DAS nucleotide-only sequence', 'input': False, 'output': True, 'Sngl': False, 'Save': False},
-    'dbid': {'try': False, 'Nuc': True, 'Pro': True, 'Feat': False, 'Gap': True, 'Mset': False,
-             'description': 'FASTA format variant with database name before ID'},
-    'embl': {'try': True, 'Nuc': True, 'Pro': False, 'Feat': True, 'Gap': True, 'Mset': False,
+    'abi': {'try': True,
+            'Nuc': True,
+            'Pro': True,
+            'Feat': False,
+            'Gap': True,
+            'Mset': False,
+            'description': 'ABI trace file',
+            'input': True},
+    'acedb': {'try': True,
+              'Nuc': True,
+              'Pro': True,
+              'Feat': False,
+              'Gap': True,
+              'Mset': False,
+              'description': 'ACEDB sequence format',
+              'input': True,
+              'output': True,
+              'Sngl': False,
+              'Save': False},
+    'asn1': {'Nuc': True,
+             'Pro': True,
+             'Feat': False,
+             'Gap': True,
+             'Mset': False,
+             'description': 'NCBI ASN.1 format',
+             'input': True,
+             'output': True,
+             'Sngl': False,
+             'Save': False},
+    'clustal': {'try': True,
+                'Nuc': True,
+                'Pro': True,
+                'Feat': False,
+                'Gap': True,
+                'Mset': False,
+                'description': 'Clustalw output format',
+                'input': True,
+                'output': True,
+                'Sngl': False,
+                'Save': True},
+    'codata': {'try': True,
+               'Nuc': True,
+               'Pro': True,
+               'Feat': True,
+               'Gap': True,
+               'Mset': False,
+               'description': 'CODATA entry format',
+               'input': True,
+               'output': True,
+               'Sngl': False,
+               'Save': False},
+    'das': {'Nuc': True,
+            'Pro': True,
+            'Feat': False,
+            'Gap': True,
+            'Mset': False,
+            'description': 'DASSEQUENCE DAS any sequence',
+            'input': False,
+            'output': True,
+            'Sngl': False,
+            'Save': False},
+    'dasdna': {'Nuc': True,
+               'Pro': False,
+               'Feat': False,
+               'Gap': True,
+               'Mset': False,
+               'description': 'DASDNA DAS nucleotide-only sequence',
+               'input': False,
+               'output': True,
+               'Sngl': False,
+               'Save': False},
+    'dbid': {'try': False,
+             'Nuc': True,
+             'Pro': True,
+             'Feat': False,
+             'Gap': True,
+             'Mset': False,
+             'description':
+             'FASTA format variant with database name before ID'},
+    'embl': {'try': True,
+             'Nuc': True,
+             'Pro': False,
+             'Feat': True,
+             'Gap': True,
+             'Mset': False,
              'description': 'EMBL entry format'},
-    'experiment': {'try': True, 'Nuc': True, 'Pro': True, 'Feat': False, 'Gap': True, 'Mset': False,
-             'description': 'Staden experiment file'},
-    'fasta': {'try': True, 'Nuc': True, 'Pro': True, 'Feat': False, 'Gap': True, 'Mset': False,
-                   'description': 'FASTA format including NCBI-style IDs'},
-    'fastq': {'try': True, 'Nuc': True, 'Pro': False, 'Feat': False, 'Gap': False, 'Mset': False,
-              'description': 'Fastq short read format ignoring quality scores'},
-    'fastq-illumina': {'try': False, 'Nuc': True, 'Pro': False, 'Feat': False, 'Gap': False, 'Mset': False,
-              'description': 'Fastq Illumina 1.3 short read format'},
-    'fastq-sanger': {'try': False, 'Nuc': True, 'Pro': False, 'Feat': False, 'Gap': False, 'Mset': False,
-                       'description': 'Fastq short read format with Phred quality'},
-    'fastq-solexa': {'try': False, 'Nuc': True, 'Pro': False, 'Feat': False, 'Gap': False, 'Mset': False,
-                     'description': 'Fastq Solexa/Illumina 1.0 short read format'},
-    'fitch': {'try': True, 'Nuc': True, 'Pro': True, 'Feat': False, 'Gap': True, 'Mset': False,
-                     'description': 'Fitch program format'},
-    'gcg': {'try': True, 'Nuc': True, 'Pro': True, 'Feat': False, 'Gap': True, 'Mset': False,
-              'description': 'GCG sequence format'},
-    'genbank': {'try': True, 'Nuc': True, 'Pro': False, 'Feat': True, 'Gap': True, 'Mset': False,
-            'description': 'Genbank entry format'},
-    'genpept': {'try': False, 'Nuc': False, 'Pro': True, 'Feat': True, 'Gap': True, 'Mset': False,
+    'experiment': {'try': True,
+                   'Nuc': True,
+                   'Pro': True,
+                   'Feat': False,
+                   'Gap': True,
+                   'Mset': False,
+                   'description': 'Staden experiment file'},
+    'fasta': {'try': True,
+              'Nuc': True,
+              'Pro': True,
+              'Feat': False,
+              'Gap': True,
+              'Mset': False,
+              'description': 'FASTA format including NCBI-style IDs'},
+    'fastq': {'try': True,
+              'Nuc': True,
+              'Pro': False,
+              'Feat': False,
+              'Gap': False,
+              'Mset': False,
+              'description':
+              'Fastq short read format ignoring quality scores'},
+    'fastq-illumina': {'try': False,
+                       'Nuc': True,
+                       'Pro': False,
+                       'Feat': False,
+                       'Gap': False,
+                       'Mset': False,
+                       'description': 'Fastq Illumina 1.3 short read format'},
+    'fastq-sanger': {'try': False,
+                     'Nuc': True,
+                     'Pro': False,
+                     'Feat': False,
+                     'Gap': False,
+                     'Mset': False,
+                     'description':
+                     'Fastq short read format with Phred quality'},
+    'fastq-solexa': {'try': False,
+                     'Nuc': True,
+                     'Pro': False,
+                     'Feat': False,
+                     'Gap': False,
+                     'Mset': False,
+                     'description':
+                     'Fastq Solexa/Illumina 1.0 short read format'},
+    'fitch': {'try': True,
+              'Nuc': True,
+              'Pro': True,
+              'Feat': False,
+              'Gap': True,
+              'Mset': False,
+              'description': 'Fitch program format'},
+    'gcg': {'try': True,
+            'Nuc': True,
+            'Pro': True,
+            'Feat': False,
+            'Gap': True,
+            'Mset': False,
+            'description': 'GCG sequence format'},
+    'genbank': {'try': True,
+                'Nuc': True,
+                'Pro': False,
+                'Feat': True,
+                'Gap': True,
+                'Mset': False,
+                'description': 'Genbank entry format'},
+    'genpept': {'try': False,
+                'Nuc': False,
+                'Pro': True,
+                'Feat': True,
+                'Gap': True,
+                'Mset': False,
                 'description': 'Refseq protein entry format (alias)'},
-    'gff2': {'try': True, 'Nuc': True, 'Pro': True, 'Feat': True, 'Gap': True, 'Mset': False,
-                'description': 'GFF feature file with sequence in the header'},
-    'gff3': {'try': True, 'Nuc': True, 'Pro': True, 'Feat': True, 'Gap': True, 'Mset': False,
+    'gff2': {'try': True,
+             'Nuc': True,
+             'Pro': True,
+             'Feat': True,
+             'Gap': True,
+             'Mset': False,
+             'description': 'GFF feature file with sequence in the header'},
+    'gff3': {'try': True,
+             'Nuc': True,
+             'Pro': True,
+             'Feat': True,
+             'Gap': True,
+             'Mset': False,
              'description': 'GFF3 feature file with sequence'},
-    'gifasta': {'try': False, 'Nuc': True, 'Pro': True, 'Feat': False, 'Gap': True, 'Mset': False,
-             'description': 'FASTA format including NCBI-style GIs (alias)'},
-    'hennig86': {'try': True, 'Nuc': True, 'Pro': True, 'Feat': False, 'Gap': True, 'Mset': False,
-                'description': 'Hennig86 output format'},
-    'ig': {'try': False, 'Nuc': True, 'Pro': True, 'Feat': False, 'Gap': True, 'Mset': False,
-                 'description': 'Intelligenetics sequence format'},
-    'igstrict': {'try': True, 'Nuc': True, 'Pro': True, 'Feat': False, 'Gap': True, 'Mset': False,
-           'description': 'Intelligenetics sequence format strict parser'},
-    'jackkniffer': {'try': True, 'Nuc': True, 'Pro': True, 'Feat': False, 'Gap': True, 'Mset': False,
-                 'description': 'Jackknifer interleaved and non-interleaved formats'},
-    'mase': {'try': False, 'Nuc': True, 'Pro': True, 'Feat': False, 'Gap': True, 'Mset': False,
-                 'description': 'MASE program format'},
-    'mega': {'try': True, 'Nuc': True, 'Pro': True, 'Feat': False, 'Gap': True, 'Mset': False,
-                 'description': 'MEGA interleaved and non-interleaved formats'},
-    'msf': {'try': True, 'Nuc': True, 'Pro': True, 'Feat': False, 'Gap': True, 'Mset': False,
-                 'description': 'GCG MSF (multiple sequence file) file format'},
-    'nbrf': {'try': True, 'Nuc': True, 'Pro': True, 'Feat': True, 'Gap': True, 'Mset': False,
-                 'description': 'NBRF/PIR entry format'},
-    'nexus': {'try': True, 'Nuc': True, 'Pro': True, 'Feat': False, 'Gap': True, 'Mset': False,
-                 'description': 'NEXUS/PAUP interleaved format'},
-    'pdb': {'try': True, 'Nuc': False, 'Pro': True, 'Feat': False, 'Gap': False, 'Mset': False,
-                 'description': 'PDB protein databank format ATOM lines'},
-    'pdbnuc': {'try': False, 'Nuc': True, 'Pro': False, 'Feat': False, 'Gap': False, 'Mset': False,
-                 'description': 'PDB protein databank format nucleotide ATOM lines'},
-    'pdbnucseq': {'try': False, 'Nuc': True, 'Pro': False, 'Feat': False, 'Gap': False, 'Mset': False,
-               'description': 'PDB protein databank format nucleotide SEQRES lines'},
-    'pdbseq': {'try': True, 'Nuc': False, 'Pro': True, 'Feat': False, 'Gap': False, 'Mset': False,
+    'gifasta': {'try': False,
+                'Nuc': True,
+                'Pro': True,
+                'Feat': False,
+                'Gap': True,
+                'Mset': False,
+                'description':
+                'FASTA format including NCBI-style GIs (alias)'},
+    'hennig86': {'try': True,
+                 'Nuc': True,
+                 'Pro': True,
+                 'Feat': False,
+                 'Gap': True,
+                 'Mset': False,
+                 'description': 'Hennig86 output format'},
+    'ig': {'try': False,
+           'Nuc': True,
+           'Pro': True,
+           'Feat': False,
+           'Gap': True,
+           'Mset': False,
+           'description': 'Intelligenetics sequence format'},
+    'igstrict': {'try': True,
+                 'Nuc': True,
+                 'Pro': True,
+                 'Feat': False,
+                 'Gap': True,
+                 'Mset': False,
+                 'description':
+                 'Intelligenetics sequence format strict parser'},
+    'jackkniffer': {'try': True,
+                    'Nuc': True,
+                    'Pro': True,
+                    'Feat': False,
+                    'Gap': True,
+                    'Mset': False,
+                    'description':
+                    'Jackknifer interleaved and non-interleaved formats'},
+    'mase': {'try': False,
+             'Nuc': True,
+             'Pro': True,
+             'Feat': False,
+             'Gap': True,
+             'Mset': False,
+             'description': 'MASE program format'},
+    'mega': {'try': True,
+             'Nuc': True,
+             'Pro': True,
+             'Feat': False,
+             'Gap': True,
+             'Mset': False,
+             'description': 'MEGA interleaved and non-interleaved formats'},
+    'msf': {'try': True,
+            'Nuc': True,
+            'Pro': True,
+            'Feat': False,
+            'Gap': True,
+            'Mset': False,
+            'description': 'GCG MSF (multiple sequence file) file format'},
+    'nbrf': {'try': True,
+             'Nuc': True,
+             'Pro': True,
+             'Feat': True,
+             'Gap': True,
+             'Mset': False,
+             'description': 'NBRF/PIR entry format'},
+    'nexus': {'try': True,
+              'Nuc': True,
+              'Pro': True,
+              'Feat': False,
+              'Gap': True,
+              'Mset': False,
+              'description': 'NEXUS/PAUP interleaved format'},
+    'pdb': {'try': True,
+            'Nuc': False,
+            'Pro': True,
+            'Feat': False,
+            'Gap': False,
+            'Mset': False,
+            'description': 'PDB protein databank format ATOM lines'},
+    'pdbnuc': {'try': False,
+               'Nuc': True,
+               'Pro': False,
+               'Feat': False,
+               'Gap': False,
+               'Mset': False,
+               'description':
+               'PDB protein databank format nucleotide ATOM lines'},
+    'pdbnucseq': {'try': False,
+                  'Nuc': True,
+                  'Pro': False,
+                  'Feat': False,
+                  'Gap': False,
+                  'Mset': False,
+                  'description':
+                  'PDB protein databank format nucleotide SEQRES lines'},
+    'pdbseq': {'try': True,
+               'Nuc': False,
+               'Pro': True,
+               'Feat': False,
+               'Gap': False,
+               'Mset': False,
                'description': 'PDB protein databank format SEQRES lines'},
-    'pearson': {'try': True, 'Nuc': True, 'Pro': True, 'Feat': False, 'Gap': True, 'Mset': False,
-               'description': 'Plain old FASTA format with IDs not parsed further'},
-    'phylip': {'try': True, 'Nuc': True, 'Pro': True, 'Feat': False, 'Gap': True, 'Mset': True,
-               'description': 'PHYLIP interleaved and non-interleaved formats'},
-    'phylipnon': {'try': False, 'Nuc': True, 'Pro': True, 'Feat': False, 'Gap': True, 'Mset': True,
-               'description': 'PHYLIP non-interleaved format'},
-    'raw': {'try': True, 'Nuc': True, 'Pro': True, 'Feat': False, 'Gap': False, 'Mset': False,
-                  'description': 'Raw sequence with no non-sequence characters'},
-    'refseqp': {'try': False, 'Nuc': False, 'Pro': True, 'Feat': True, 'Gap': True, 'Mset': False,
-                  'description': 'RefseqP entry format'},
-    'selex': {'try': False, 'Nuc': True, 'Pro': True, 'Feat': False, 'Gap': True, 'Mset': False,
-                  'description': 'SELEX format'},
-    'staden': {'try': False, 'Nuc': True, 'Pro': True, 'Feat': False, 'Gap': True, 'Mset': True,
-                  'description': 'Old Staden package sequence format'},
-    'stockholm': {'try': True, 'Nuc': True, 'Pro': True, 'Feat': False, 'Gap': True, 'Mset': False,
+    'pearson': {'try': True,
+                'Nuc': True,
+                'Pro': True,
+                'Feat': False,
+                'Gap': True,
+                'Mset': False,
+                'description':
+                'Plain old FASTA format with IDs not parsed further'},
+    'phylip': {'try': True,
+               'Nuc': True,
+               'Pro': True,
+               'Feat': False,
+               'Gap': True,
+               'Mset': True,
+               'description':
+               'PHYLIP interleaved and non-interleaved formats'},
+    'phylipnon': {'try': False,
+                  'Nuc': True,
+                  'Pro': True,
+                  'Feat': False,
+                  'Gap': True,
+                  'Mset': True,
+                  'description': 'PHYLIP non-interleaved format'},
+    'raw': {'try': True,
+            'Nuc': True,
+            'Pro': True,
+            'Feat': False,
+            'Gap': False,
+            'Mset': False,
+            'description': 'Raw sequence with no non-sequence characters'},
+    'refseqp': {'try': False,
+                'Nuc': False,
+                'Pro': True,
+                'Feat': True,
+                'Gap': True,
+                'Mset': False,
+                'description': 'RefseqP entry format'},
+    'selex': {'try': False,
+              'Nuc': True,
+              'Pro': True,
+              'Feat': False,
+              'Gap': True,
+              'Mset': False,
+              'description': 'SELEX format'},
+    'staden': {'try': False,
+               'Nuc': True,
+               'Pro': True,
+               'Feat': False,
+               'Gap': True,
+               'Mset': True,
+               'description': 'Old Staden package sequence format'},
+    'stockholm': {'try': True,
+                  'Nuc': True,
+                  'Pro': True,
+                  'Feat': False,
+                  'Gap': True,
+                  'Mset': False,
                   'description': 'Stockholm (pfam) format'},
-    'strider': {'try': True, 'Nuc': True, 'Pro': True, 'Feat': False, 'Gap': True, 'Mset': False,
-                  'description': 'DNA Strider output format'},
-    'swiss': {'try': True, 'Nuc': False, 'Pro': True, 'Feat': True, 'Gap': True, 'Mset': False,
-                'description': 'SwissProt entry format'},
-    'text': {'try': False, 'Nuc': True, 'Pro': True, 'Feat': False, 'Gap': True, 'Mset': False,
-              'description': 'Plain text'},
-    'treecon': {'try': True, 'Nuc': True, 'Pro': True, 'Feat': False, 'Gap': True, 'Mset': False,
-             'description': 'Treecon output format'},
+    'strider': {'try': True,
+                'Nuc': True,
+                'Pro': True,
+                'Feat': False,
+                'Gap': True,
+                'Mset': False,
+                'description': 'DNA Strider output format'},
+    'swiss': {'try': True,
+              'Nuc': False,
+              'Pro': True,
+              'Feat': True,
+              'Gap': True,
+              'Mset': False,
+              'description': 'SwissProt entry format'},
+    'text': {'try': False,
+             'Nuc': True,
+             'Pro': True,
+             'Feat': False,
+             'Gap': True,
+             'Mset': False,
+             'description': 'Plain text'},
+    'treecon': {'try': True,
+                'Nuc': True,
+                'Pro': True,
+                'Feat': False,
+                'Gap': True,
+                'Mset': False,
+                'description': 'Treecon output format'},
 }
 
+
 class Acd(object):
-    def __init__(self, application=None, sections=[]):
+    """
+    ACD description
+    """
+    def __init__(self, application=None, sections=None):
         self.application = application
-        self.sections = sections
+        self.sections = sections or []
+
 
 class UnknownAcdPropertyException(Exception):
-
-    def __init__(self, attribute_name, attribute_value, parameter_name, *args, **kwargs):
+    """
+    Exception thrown when trying to set a value to an unknown property
+    """
+    def __init__(self, attribute_name, attribute_value, parameter_name):
+        super(UnknownAcdPropertyException, self).__init__()
         self.attribute_name = attribute_name
         self.attribute_value = attribute_value
         self.parameter_name = parameter_name
-        super(Exception, self).__init__('trying to set unknown property "{0}" to "{1}" in parameter "{2}"'.format(self.attribute_name, self.attribute_value, self.parameter_name))
+
+    def __str__(self):
+        template = 'trying to set unknown property "{0}" to "{1}" in ' +\
+                   'parameter "{2}"'
+        return template.format(self.attribute_name, self.attribute_value,
+                               self.parameter_name)
 
 class InvalidAcdPropertyValue(Exception):
-
-    def __init__(self, attribute_name, attribute_value, parameter_name, *args, **kwargs):
+    """
+    Exception thrown when trying to set an invalid value to an ACD property
+    """
+    def __init__(self, attribute_name, attribute_value, parameter_name):
+        super(InvalidAcdPropertyValue, self).__init__()
         self.attribute_name = attribute_name
         self.attribute_value = attribute_value
         self.parameter_name = parameter_name
-        super(Exception, self).__init__('trying to set value of property "{0}" to invalid value "{1}" in parameter "{2}"'.format(self.attribute_name, self.attribute_value, self.parameter_name))
+
+    def __str__(self):
+        template = 'trying to set value of property "{0}" to invalid value ' +\
+                   '"{1}" in parameter "{2}"'
+        return template.format(self.attribute_name, self.attribute_value,
+                               self.parameter_name)
+
 
 class ElementWithAttributes(object):
+    """
+    Abstract class to structure an ACD element that has some attributes
+    """
     def set_attributes(self, attributes):
+        """
+        Set the values for the attributes of the element, based on
+        the existing default values
+        :param attributes: the attributes to be set
+        :type attributes: dict
+        :return:
+        """
         for attribute in attributes:
             if self.attributes.has_key(attribute.name):
-                if attribute.value.startswith('$') or attribute.value.startswith('@'):
+                if attribute.value.startswith(
+                        '$') or attribute.value.startswith('@'):
                     #computed attribute values
                     self.attributes[attribute.name] = attribute.value
                 try:
-                    if type(self.attributes[attribute.name]) == list:
+                    if isinstance(self.attributes[attribute.name], list):
                         self.attributes[attribute.name].append(attribute.value)
-                    elif type(self.attributes[attribute.name]) == bool:
+                    elif isinstance(self.attributes[attribute.name], bool):
                         if attribute.value in ['yes', 'Y', 'y', 'true']:
                             self.attributes[attribute.name] = True
                         elif attribute.value in ['no', 'N', 'n', 'false']:
                             self.attributes[attribute.name] = False
                         else:
-                            raise InvalidAcdPropertyValue(attribute.name, attribute.value, self.name)
+                            raise InvalidAcdPropertyValue(
+                                attribute.name, attribute.value, self.name)
                     else:
-                        self.attributes[attribute.name] = type(self.attributes[attribute.name])(attribute.value)
+                        self.attributes[attribute.name] = type(self.attributes[
+                            attribute.name])(attribute.value)
                 except TypeError as terr:
-                    print "Error while trying to set value of {0} to {1}".format(attribute.name, attribute.value,
-                                                                                 self.name)
+                    print "Error while trying to set value of {0} to {1}".format(
+                        attribute.name, attribute.value, self.name)
                     raise terr
             elif self.qualifiers.has_key(attribute.name):
-                if attribute.value.startswith('$') or attribute.value.startswith('@'):
+                if attribute.value.startswith(
+                        '$') or attribute.value.startswith('@'):
                     # computed qualifier values
                     self.qualifiers[attribute.name] = attribute.value
                 try:
@@ -154,57 +462,93 @@ class ElementWithAttributes(object):
                         elif attribute.value in ['no', 'N', 'n', 'false']:
                             self.qualifiers[attribute.name] = False
                         else:
-                            raise InvalidAcdPropertyValue(attribute.name, attribute.value, self.name)
+                            raise InvalidAcdPropertyValue(
+                                attribute.name, attribute.value, self.name)
                     else:
-                        self.qualifiers[attribute.name] = type(self.qualifiers[attribute.name])(attribute.value)
+                        self.qualifiers[attribute.name] = type(self.qualifiers[
+                            attribute.name])(attribute.value)
                 except TypeError as terr:
-                    print "Error while trying to set value of {0} to {1}".format(qualifier.name,
-                                                                                 qualifier.value,
-                                                                                 self.name)
+                    print "Error while trying to set value of {0} to {1} in parameter {2}".format(
+                        attribute.name, attribute.value, self.name)
                     raise terr
             else:
-                raise UnknownAcdPropertyException(attribute.name, attribute.value, self.name,
-                    "trying to set unknown property {0} to {1} in parameter {2}".format(attribute.name, attribute.value,
-                                                                                        self.name))
+                raise UnknownAcdPropertyException(attribute.name,
+                                                  attribute.value, self.name)
 
 
 class Application(ElementWithAttributes):
+    """
+    ACD Application block
+    """
     def __init__(self, name, attributes=[]):
+        """
+        :param name: name of the application
+        :type name: basestring
+        :param attributes: attributes of the Application block
+        :type attributes: dict
+        """
         self.name = name
         self.attributes = {'documentation': '',
                            'relations': [],
                            'groups': '',
-                           'keywords':[],
+                           'keywords': [],
                            'gui': True,
                            'batch': True,
-                           'embassy':'',
-                           'external':'',
-                           'cpu':'',
-                           'supplier':'',
-                           'version':'',
-                           'nonemboss':'',
-                           'executable':'',
-                           'template':'',
-                           'comment':'',
+                           'embassy': '',
+                           'external': '',
+                           'cpu': '',
+                           'supplier': '',
+                           'version': '',
+                           'nonemboss': '',
+                           'executable': '',
+                           'template': '',
+                           'comment': '',
                            'obsolete': ''}
         self.set_attributes(attributes)
 
 
 class Section(ElementWithAttributes):
+    """
+    ACD parameters section block
+    """
     def __init__(self, name, properties=[], parameters=[]):
+        """
+        :param name: name of the section
+        :type name: basestring
+        :param properties: the properties to set
+        :type properties: list
+        :param parameters: the parameters of the section
+        :type parameters: list
+        """
         self.name = name
         self.properties = properties
         self.parameters = parameters
 
+
 INPUT = 'input parameter type'
+""" input parameter type """
 
 OUTPUT = 'output parameter type'
+""" output parameter type """
+
 
 class Parameter(ElementWithAttributes):
-
+    """
+    ACD Parameter block
+    """
     type = INPUT
+    """ type of the parameter, input or output """
 
     def __init__(self, name, datatype, attributes):
+        """
+        :param name: name of the parameter
+        :type name: basestring
+        :param datatype: the datatype of the parameter (one of the keys of
+        PARAMETER_CLASSES
+        :type datatype: dict
+        :param attributes: attribute values for the parameter
+        :type attributes: dict
+        """
         self._init_attribute_defaults()
         self.name = name
         self.datatype = datatype
@@ -233,14 +577,17 @@ class Parameter(ElementWithAttributes):
                            'pname': '',
                            'type': '',
                            'features': '',
-                           'default': '',
-                           }
+                           'default': '', }
         self.qualifiers = {}
+
 
 PARAMETER_CLASSES = {}
 
-class ArrayParameter(Parameter):
 
+class ArrayParameter(Parameter):
+    """
+    Array parameter
+    """
     def _init_attribute_defaults(self):
         super(ArrayParameter, self)._init_attribute_defaults()
         self.attributes.update({'size': 1,
@@ -254,21 +601,29 @@ class ArrayParameter(Parameter):
                                 'precision': 3,
                                 'trueminimum': False,
                                 'failrange': False,
-                                'rangemessage':'',
-                                'tolerance':0.01})
+                                'rangemessage': '',
+                                'tolerance': 0.01})
 
 
 PARAMETER_CLASSES['array'] = ArrayParameter
 
+
 class BooleanParameter(Parameter):
+    """
+    Boolean parameter
+    """
     def _init_attribute_defaults(self):
         super(BooleanParameter, self)._init_attribute_defaults()
         self.attributes.update({'default': False})
+
 
 PARAMETER_CLASSES['boolean'] = BooleanParameter
 
 
 class FloatParameter(Parameter):
+    """
+    Float parameter
+    """
     def _init_attribute_defaults(self):
         super(FloatParameter, self)._init_attribute_defaults()
         self.attributes.update({'minimum': -sys.float_info.max,
@@ -282,10 +637,14 @@ class FloatParameter(Parameter):
                                 'rangemessage': '',
                                 'large': False})
 
+
 PARAMETER_CLASSES['float'] = FloatParameter
 
 
 class IntegerParameter(Parameter):
+    """
+    Integer parameter
+    """
     def _init_attribute_defaults(self):
         super(IntegerParameter, self)._init_attribute_defaults()
         self.attributes.update({'minimum': -sys.maxint,
@@ -301,7 +660,11 @@ class IntegerParameter(Parameter):
 
 PARAMETER_CLASSES['integer'] = IntegerParameter
 
+
 class RangeParameter(Parameter):
+    """
+    Range parameter
+    """
     def _init_attribute_defaults(self):
         super(RangeParameter, self)._init_attribute_defaults()
         self.attributes.update({'minimum': 1,
@@ -313,10 +676,14 @@ class RangeParameter(Parameter):
                                 'size': 0,
                                 'minsize': 0})
 
+
 PARAMETER_CLASSES['range'] = RangeParameter
 
 
 class StringParameter(Parameter):
+    """
+    String parameter
+    """
     def _init_attribute_defaults(self):
         super(StringParameter, self)._init_attribute_defaults()
         self.attributes.update({'minlength': 0,
@@ -326,14 +693,24 @@ class StringParameter(Parameter):
                                 'lower': False,
                                 'word': False})
 
+
 PARAMETER_CLASSES['string'] = StringParameter
 
+
 class ToggleParameter(Parameter):
+    """
+    Toggle parameter
+    """
     pass
+
 
 PARAMETER_CLASSES['toggle'] = ToggleParameter
 
+
 class AssemblyParameter(Parameter):
+    """
+    Assembly parameter
+    """
     def _init_attribute_defaults(self):
         super(AssemblyParameter, self)._init_attribute_defaults()
         self.attributes.update({'cbegin': 0,
@@ -345,25 +722,35 @@ class AssemblyParameter(Parameter):
                                 'entry': False,
                                 'nullok': False})
 
+
 PARAMETER_CLASSES['assembly'] = AssemblyParameter
 
+
 class CodonParameter(Parameter):
+    """
+    Codon parameter
+    """
     def _init_attribute_defaults(self):
         super(CodonParameter, self)._init_attribute_defaults()
         self.attributes.update({'name': 'Ehum.cut',
                                 'format': '',
                                 'nullok': False})
 
+
 PARAMETER_CLASSES['codon'] = CodonParameter
 
+
 class CPDBParameter(Parameter):
-    '''Clean PDB file'''
+    """
+    Clean PDB file parameter
+    """
     def _init_attribute_defaults(self):
         super(CPDBParameter, self)._init_attribute_defaults()
-        self.attributes.update({'format': '',
-                                'nullok': False})
+        self.attributes.update({'format': '', 'nullok': False})
+
 
 PARAMETER_CLASSES['cpdb'] = CPDBParameter
+
 
 class DataFileParameter(Parameter):
     def _init_attribute_defaults(self):
@@ -373,7 +760,9 @@ class DataFileParameter(Parameter):
                                 'directory': '',
                                 'nullok': False})
 
+
 PARAMETER_CLASSES['datafile'] = DataFileParameter
+
 
 class DirectoryParameter(Parameter):
     def _init_attribute_defaults(self):
@@ -383,7 +772,9 @@ class DirectoryParameter(Parameter):
                                 'extension': '',
                                 'nullok': False})
 
+
 PARAMETER_CLASSES['directory'] = DirectoryParameter
+
 
 class DirListParameter(Parameter):
     def _init_attribute_defaults(self):
@@ -392,7 +783,9 @@ class DirListParameter(Parameter):
                                 'extension': '',
                                 'nullok': False})
 
+
 PARAMETER_CLASSES['dirlist'] = DirListParameter
+
 
 class DiscreteStatesParameter(Parameter):
     def _init_attribute_defaults(self):
@@ -400,22 +793,26 @@ class DiscreteStatesParameter(Parameter):
         self.attributes.update({'length': 0,
                                 'size': 1,
                                 'characters': '01',
-                                'nullok':False})
+                                'nullok': False})
+
 
 PARAMETER_CLASSES['discretestates'] = DiscreteStatesParameter
 
+
 class DistancesParameter(Parameter):
     '''Distance Matrix'''
+
     def _init_attribute_defaults(self):
         super(DistancesParameter, self)._init_attribute_defaults()
-        self.attributes.update({'missval': False,
-                                'size': 1,
-                                'nullok':False})
+        self.attributes.update({'missval': False, 'size': 1, 'nullok': False})
+
 
 PARAMETER_CLASSES['distances'] = DistancesParameter
 
+
 class FeaturesParameter(Parameter):
     '''Readable feature table'''
+
     def _init_attribute_defaults(self):
         super(FeaturesParameter, self)._init_attribute_defaults()
         self.attributes.update({'type': '',
@@ -433,19 +830,24 @@ class FeaturesParameter(Parameter):
                                 'freverse': False,
                                 'fcircular': False})
 
+
 PARAMETER_CLASSES['features'] = FeaturesParameter
+
 
 class FileListParameter(Parameter):
     '''Comma-separated file list'''
+
     def _init_attribute_defaults(self):
         super(FileListParameter, self)._init_attribute_defaults()
-        self.attributes.update({'binary': False,
-                                'nullok': False})
+        self.attributes.update({'binary': False, 'nullok': False})
+
 
 PARAMETER_CLASSES['filelist'] = FileListParameter
 
+
 class FrequenciesParameter(Parameter):
     '''Frequency value(s)'''
+
     def _init_attribute_defaults(self):
         super(FrequenciesParameter, self)._init_attribute_defaults()
         self.attributes.update({'length': 0,
@@ -455,10 +857,13 @@ class FrequenciesParameter(Parameter):
                                 'within': False,
                                 'nullok': False})
 
+
 PARAMETER_CLASSES['frequencies'] = FrequenciesParameter
+
 
 class InFileParameter(Parameter):
     '''Input file'''
+
     def _init_attribute_defaults(self):
         super(InFileParameter, self)._init_attribute_defaults()
         self.attributes.update({'directory': '',
@@ -466,21 +871,27 @@ class InFileParameter(Parameter):
                                 'binary': False,
                                 'nullok': False})
 
+
 PARAMETER_CLASSES['infile'] = InFileParameter
+
 
 class MatrixParameter(Parameter):
     '''Input file'''
+
     def _init_attribute_defaults(self):
         super(MatrixParameter, self)._init_attribute_defaults()
         self.attributes.update({'protein': True,
                                 'pname': 'EBLOSUM62',
                                 'nname': 'EDNAFULL'})
 
+
 PARAMETER_CLASSES['matrix'] = MatrixParameter
 PARAMETER_CLASSES['matrixf'] = MatrixParameter
 
+
 class PropertiesParameter(Parameter):
     '''Input file'''
+
     def _init_attribute_defaults(self):
         super(PropertiesParameter, self)._init_attribute_defaults()
         self.attributes.update({'length': 0,
@@ -488,14 +899,17 @@ class PropertiesParameter(Parameter):
                                 'characters': '',
                                 'nullok': False})
 
+
 PARAMETER_CLASSES['properties'] = PropertiesParameter
+
 
 class ScopParameter(Parameter):
     '''SCOP and CATH domain classification data in DCF'''
+
     def _init_attribute_defaults(self):
         super(ScopParameter, self)._init_attribute_defaults()
-        self.attributes.update({'nullok': False,
-                                'format': ''})
+        self.attributes.update({'nullok': False, 'format': ''})
+
 
 PARAMETER_CLASSES['scop'] = ScopParameter
 
@@ -505,29 +919,31 @@ class ListParameter(Parameter):
         super(ListParameter, self)._init_attribute_defaults()
         self.attributes.update({'minimum': 1,
                                 'maximum': 1,
-                                'button':False,
-                                'casesensitive':False,
-                                'header':'',
-                                'delimiter':";",
-                                'codedelimiter':':',
-                                'values':''})
+                                'button': False,
+                                'casesensitive': False,
+                                'header': '',
+                                'delimiter': ";",
+                                'codedelimiter': ':',
+                                'values': ''})
 
 
 PARAMETER_CLASSES['list'] = ListParameter
+
 
 class SelectionParameter(Parameter):
     def _init_attribute_defaults(self):
         super(SelectionParameter, self)._init_attribute_defaults()
         self.attributes.update({'minimum': 1,
                                 'maximum': 1,
-                                'button':False,
-                                'casesensitive':False,
-                                'header':'',
-                                'delimiter':";",
-                                'values':''})
+                                'button': False,
+                                'casesensitive': False,
+                                'header': '',
+                                'delimiter': ";",
+                                'values': ''})
 
 
 PARAMETER_CLASSES['selection'] = SelectionParameter
+
 
 class SequenceParameter(Parameter):
     def _init_attribute_defaults(self):
@@ -555,7 +971,9 @@ class SequenceParameter(Parameter):
                                 'fformat': '',
                                 'fopenfile': ''})
 
+
 PARAMETER_CLASSES['sequence'] = SequenceParameter
+
 
 class SeqAllParameter(Parameter):
     def _init_attribute_defaults(self):
@@ -585,7 +1003,9 @@ class SeqAllParameter(Parameter):
                                 'fformat': '',
                                 'fopenfile': ''})
 
+
 PARAMETER_CLASSES['seqall'] = SeqAllParameter
+
 
 class SeqSetParameter(Parameter):
     def _init_attribute_defaults(self):
@@ -616,7 +1036,9 @@ class SeqSetParameter(Parameter):
                                 'fformat': '',
                                 'fopenfile': ''})
 
+
 PARAMETER_CLASSES['seqset'] = SeqSetParameter
+
 
 class SeqSetAllParameter(Parameter):
     def _init_attribute_defaults(self):
@@ -649,25 +1071,8 @@ class SeqSetAllParameter(Parameter):
                                 'fformat': '',
                                 'fopenfile': ''})
 
+
 PARAMETER_CLASSES['seqsetall'] = SeqSetAllParameter
-
-class MatrixParameter(Parameter):
-    def _init_attribute_defaults(self):
-        super(MatrixParameter, self)._init_attribute_defaults()
-        self.attributes.update({'pname': 'EBLOSUM62',
-                                'nname': 'EDNAFULL',
-                                'protein': True})
-
-PARAMETER_CLASSES['matrix'] = MatrixParameter
-
-class MatrixFParameter(Parameter):
-    def _init_attribute_defaults(self):
-        super(MatrixFParameter, self)._init_attribute_defaults()
-        self.attributes.update({'pname': 'EBLOSUM62',
-                                'nname': 'EDNAFULL',
-                                'protein': True})
-
-PARAMETER_CLASSES['matrixf'] = MatrixFParameter
 
 class OBOParameter(Parameter):
     def _init_attribute_defaults(self):
@@ -681,7 +1086,9 @@ class OBOParameter(Parameter):
                                 'ioffset': '',
                                 'idbname': ''})
 
+
 PARAMETER_CLASSES['obo'] = OBOParameter
+
 
 class AlignParameter(Parameter):
 
@@ -695,9 +1102,9 @@ class AlignParameter(Parameter):
                                 'multiple': False,
                                 'type': '',
                                 'taglist': '',
-                                'nullok':False,
-                                'nulldefault':False})
-        self.qualifiers.update({'aformat':'',
+                                'nullok': False,
+                                'nulldefault': False})
+        self.qualifiers.update({'aformat': '',
                                 'aextension': '',
                                 'adirectory': '',
                                 'aname': '',
@@ -707,7 +1114,9 @@ class AlignParameter(Parameter):
                                 'ausashow': False,
                                 'aglobal': False})
 
+
 PARAMETER_CLASSES['align'] = AlignParameter
+
 
 class FeatOutParameter(Parameter):
 
@@ -720,8 +1129,8 @@ class FeatOutParameter(Parameter):
                                 'extension': '',
                                 'type': '',
                                 'multiple': False,
-                                'nullok':False,
-                                'nulldefault':False})
+                                'nullok': False,
+                                'nulldefault': False})
         self.qualifiers.update({'offormat': '',
                                 'ofopenfile': '',
                                 'ofextension': '',
@@ -729,7 +1138,9 @@ class FeatOutParameter(Parameter):
                                 'ofname': '',
                                 'ofsingle': False})
 
+
 PARAMETER_CLASSES['featout'] = FeatOutParameter
+
 
 class OutAssemblyParameter(Parameter):
 
@@ -740,13 +1151,13 @@ class OutAssemblyParameter(Parameter):
         self.description = 'Assembly of sequence reads'
         self.attributes.update({'name': '',
                                 'extension': '',
-                                'nullok':False,
-                                'nulldefault':False})
-        self.qualifiers.update({'odirectory': '',
-                                'oformat': ''})
+                                'nullok': False,
+                                'nulldefault': False})
+        self.qualifiers.update({'odirectory': '', 'oformat': ''})
 
 
 PARAMETER_CLASSES['outassembly'] = OutAssemblyParameter
+
 
 class OutCodonParameter(Parameter):
 
@@ -757,13 +1168,13 @@ class OutCodonParameter(Parameter):
         self.description = 'Codon usage file'
         self.attributes.update({'name': '',
                                 'extension': '',
-                                'nullok':False,
-                                'nulldefault':False})
-        self.qualifiers.update({'odirectory': '',
-                                'oformat': ''})
+                                'nullok': False,
+                                'nulldefault': False})
+        self.qualifiers.update({'odirectory': '', 'oformat': ''})
 
 
 PARAMETER_CLASSES['outcodon'] = OutCodonParameter
+
 
 class OutCpdbParameter(Parameter):
 
@@ -773,10 +1184,12 @@ class OutCpdbParameter(Parameter):
         super(OutCpdbParameter, self)._init_attribute_defaults()
         self.description = 'Cleaned PDB file'
         self.attributes.update({'extension': '',
-                                'nullok':False,
-                                'nulldefault':False})
+                                'nullok': False,
+                                'nulldefault': False})
+
 
 PARAMETER_CLASSES['outcpdb'] = OutCpdbParameter
+
 
 class OutDataParameter(Parameter):
 
@@ -786,13 +1199,14 @@ class OutDataParameter(Parameter):
         super(OutDataParameter, self)._init_attribute_defaults()
         self.description = 'Formatted output file'
         self.attributes.update({'type': '',
-                                'nullok':False,
-                                'nulldefault':False,
+                                'nullok': False,
+                                'nulldefault': False,
                                 'binary': False})
-        self.qualifiers.update({'odirectory': '',
-                                'oformat': ''})
+        self.qualifiers.update({'odirectory': '', 'oformat': ''})
+
 
 PARAMETER_CLASSES['outdata'] = OutDataParameter
+
 
 class OutDirParameter(Parameter):
 
@@ -802,14 +1216,16 @@ class OutDirParameter(Parameter):
         super(OutDirParameter, self)._init_attribute_defaults()
         self.description = 'Output directory'
         self.attributes.update({'fullpath': False,
-                                'nulldefault':False,
-                                'nullok':False,
+                                'nulldefault': False,
+                                'nullok': False,
                                 'binary': False,
                                 'create': False,
                                 'temporary': False})
         self.qualifiers.update({'extension': ''})
 
+
 PARAMETER_CLASSES['outdir'] = OutDirParameter
+
 
 class OutDiscreteParameter(Parameter):
 
@@ -818,12 +1234,12 @@ class OutDiscreteParameter(Parameter):
     def _init_attribute_defaults(self):
         super(OutDiscreteParameter, self)._init_attribute_defaults()
         self.description = 'Discrete states file'
-        self.attributes.update({'nulldefault':False,
-                                'nullok':False})
-        self.qualifiers.update({'odirectory': '',
-                                'oformat': ''})
+        self.attributes.update({'nulldefault': False, 'nullok': False})
+        self.qualifiers.update({'odirectory': '', 'oformat': ''})
+
 
 PARAMETER_CLASSES['outdiscrete'] = OutDiscreteParameter
+
 
 class OutDistanceParameter(Parameter):
 
@@ -832,10 +1248,11 @@ class OutDistanceParameter(Parameter):
     def _init_attribute_defaults(self):
         super(OutDistanceParameter, self)._init_attribute_defaults()
         self.description = 'Distance matrix'
-        self.attributes.update({'nulldefault':False,
-                                'nullok':False})
+        self.attributes.update({'nulldefault': False, 'nullok': False})
+
 
 PARAMETER_CLASSES['outdistance'] = OutDistanceParameter
+
 
 class OutFileParameter(Parameter):
     def _init_attribute_defaults(self):
@@ -843,12 +1260,14 @@ class OutFileParameter(Parameter):
         self.description = 'Output file'
         self.attributes.update({'name': '',
                                 'extension': '',
-                                'append':False,
-                                'nullok':False,
-                                'nulldefault':False})
+                                'append': False,
+                                'nullok': False,
+                                'nulldefault': False})
         self.qualifiers.update({'odirectory': ''})
 
+
 PARAMETER_CLASSES['outfile'] = OutFileParameter
+
 
 class OutFreqParameter(Parameter):
 
@@ -857,12 +1276,12 @@ class OutFreqParameter(Parameter):
     def _init_attribute_defaults(self):
         super(OutFreqParameter, self)._init_attribute_defaults()
         self.description = 'Frequency value(s)'
-        self.attributes.update({'nullok':False,
-                                'nulldefault':False})
-        self.qualifiers.update({'odirectory': '',
-                                'oformat': ''})
+        self.attributes.update({'nullok': False, 'nulldefault': False})
+        self.qualifiers.update({'odirectory': '', 'oformat': ''})
+
 
 PARAMETER_CLASSES['outfreq'] = OutFreqParameter
+
 
 class OutMatrix(Parameter):
 
@@ -871,12 +1290,12 @@ class OutMatrix(Parameter):
     def _init_attribute_defaults(self):
         super(OutMatrix, self)._init_attribute_defaults()
         self.description = 'Comparison matrix file'
-        self.attributes.update({'nullok':False,
-                                'nulldefault':False})
-        self.qualifiers.update({'odirectory': '',
-                                'oformat': ''})
+        self.attributes.update({'nullok': False, 'nulldefault': False})
+        self.qualifiers.update({'odirectory': '', 'oformat': ''})
+
 
 PARAMETER_CLASSES['outmatrix'] = OutMatrix
+
 
 class OutMatrixF(Parameter):
 
@@ -885,12 +1304,12 @@ class OutMatrixF(Parameter):
     def _init_attribute_defaults(self):
         super(OutMatrixF, self)._init_attribute_defaults()
         self.description = 'Comparison matrix file'
-        self.attributes.update({'nullok':False,
-                                'nulldefault':False})
-        self.qualifiers.update({'odirectory': '',
-                                'oformat': ''})
+        self.attributes.update({'nullok': False, 'nulldefault': False})
+        self.qualifiers.update({'odirectory': '', 'oformat': ''})
+
 
 PARAMETER_CLASSES['outmatrixf'] = OutMatrixF
+
 
 class OutOBO(Parameter):
 
@@ -899,14 +1318,15 @@ class OutOBO(Parameter):
     def _init_attribute_defaults(self):
         super(OutOBO, self)._init_attribute_defaults()
         self.description = 'OBO ontology term(s)'
-        self.attributes.update({'name':'',
-                                'extension':'',
-                                'nullok':False,
-                                'nulldefault':False})
-        self.qualifiers.update({'odirectory': '',
-                                'oformat': ''})
+        self.attributes.update({'name': '',
+                                'extension': '',
+                                'nullok': False,
+                                'nulldefault': False})
+        self.qualifiers.update({'odirectory': '', 'oformat': ''})
+
 
 PARAMETER_CLASSES['outobo'] = OutOBO
+
 
 class OutProperties(Parameter):
 
@@ -915,12 +1335,12 @@ class OutProperties(Parameter):
     def _init_attribute_defaults(self):
         super(OutProperties, self)._init_attribute_defaults()
         self.description = 'Property value(s)'
-        self.attributes.update({'nullok':False,
-                                'nulldefault':False})
-        self.qualifiers.update({'odirectory': '',
-                                'oformat': ''})
+        self.attributes.update({'nullok': False, 'nulldefault': False})
+        self.qualifiers.update({'odirectory': '', 'oformat': ''})
+
 
 PARAMETER_CLASSES['outproperties'] = OutProperties
+
 
 class OutRefseq(Parameter):
 
@@ -929,14 +1349,15 @@ class OutRefseq(Parameter):
     def _init_attribute_defaults(self):
         super(OutRefseq, self)._init_attribute_defaults()
         self.description = 'Reference sequence'
-        self.attributes.update({'name':'',
-                                'extension':'',
-                                'nullok':False,
-                                'nulldefault':False})
-        self.qualifiers.update({'odirectory': '',
-                                'oformat': ''})
+        self.attributes.update({'name': '',
+                                'extension': '',
+                                'nullok': False,
+                                'nulldefault': False})
+        self.qualifiers.update({'odirectory': '', 'oformat': ''})
+
 
 PARAMETER_CLASSES['outrefseq'] = OutRefseq
+
 
 class OutResource(Parameter):
 
@@ -945,14 +1366,15 @@ class OutResource(Parameter):
     def _init_attribute_defaults(self):
         super(OutResource, self)._init_attribute_defaults()
         self.description = 'Reference sequence'
-        self.attributes.update({'name':'',
-                                'extension':'',
-                                'nullok':False,
-                                'nulldefault':False})
-        self.qualifiers.update({'odirectory': '',
-                                'oformat': ''})
+        self.attributes.update({'name': '',
+                                'extension': '',
+                                'nullok': False,
+                                'nulldefault': False})
+        self.qualifiers.update({'odirectory': '', 'oformat': ''})
+
 
 PARAMETER_CLASSES['outresource'] = OutResource
+
 
 class OutScop(Parameter):
 
@@ -961,12 +1383,12 @@ class OutScop(Parameter):
     def _init_attribute_defaults(self):
         super(OutScop, self)._init_attribute_defaults()
         self.description = 'Property value(s)'
-        self.attributes.update({'nullok':False,
-                                'nulldefault':False})
-        self.qualifiers.update({'odirectory': '',
-                                'oformat': ''})
+        self.attributes.update({'nullok': False, 'nulldefault': False})
+        self.qualifiers.update({'odirectory': '', 'oformat': ''})
+
 
 PARAMETER_CLASSES['outscop'] = OutScop
+
 
 class OutTaxon(Parameter):
 
@@ -975,14 +1397,15 @@ class OutTaxon(Parameter):
     def _init_attribute_defaults(self):
         super(OutTaxon, self)._init_attribute_defaults()
         self.description = 'NCBI Taxonomy entries'
-        self.attributes.update({'name':'',
-                                'extension':'',
-                                'nullok':False,
-                                'nulldefault':False})
-        self.qualifiers.update({'odirectory': '',
-                                'oformat': ''})
+        self.attributes.update({'name': '',
+                                'extension': '',
+                                'nullok': False,
+                                'nulldefault': False})
+        self.qualifiers.update({'odirectory': '', 'oformat': ''})
+
 
 PARAMETER_CLASSES['outtaxon'] = OutTaxon
+
 
 class OutText(Parameter):
 
@@ -991,14 +1414,15 @@ class OutText(Parameter):
     def _init_attribute_defaults(self):
         super(OutText, self)._init_attribute_defaults()
         self.description = 'Text entries'
-        self.attributes.update({'name':'',
-                                'extension':'',
-                                'nullok':False,
-                                'nulldefault':False})
-        self.qualifiers.update({'odirectory': '',
-                                'oformat': ''})
+        self.attributes.update({'name': '',
+                                'extension': '',
+                                'nullok': False,
+                                'nulldefault': False})
+        self.qualifiers.update({'odirectory': '', 'oformat': ''})
+
 
 PARAMETER_CLASSES['outtext'] = OutText
+
 
 class OutTree(Parameter):
 
@@ -1007,14 +1431,15 @@ class OutTree(Parameter):
     def _init_attribute_defaults(self):
         super(OutTree, self)._init_attribute_defaults()
         self.description = 'Phylogenetic tree'
-        self.attributes.update({'name':'',
-                                'extension':'',
-                                'nullok':False,
-                                'nulldefault':False})
-        self.qualifiers.update({'odirectory': '',
-                                'oformat': ''})
+        self.attributes.update({'name': '',
+                                'extension': '',
+                                'nullok': False,
+                                'nulldefault': False})
+        self.qualifiers.update({'odirectory': '', 'oformat': ''})
+
 
 PARAMETER_CLASSES['outtree'] = OutTree
+
 
 class OutURL(Parameter):
 
@@ -1023,14 +1448,15 @@ class OutURL(Parameter):
     def _init_attribute_defaults(self):
         super(OutURL, self)._init_attribute_defaults()
         self.description = 'URL entries'
-        self.attributes.update({'name':'',
-                                'extension':'',
-                                'nullok':False,
-                                'nulldefault':False})
-        self.qualifiers.update({'odirectory': '',
-                                'oformat': ''})
+        self.attributes.update({'name': '',
+                                'extension': '',
+                                'nullok': False,
+                                'nulldefault': False})
+        self.qualifiers.update({'odirectory': '', 'oformat': ''})
+
 
 PARAMETER_CLASSES['outurl'] = OutURL
+
 
 class OutVariation(Parameter):
 
@@ -1039,14 +1465,15 @@ class OutVariation(Parameter):
     def _init_attribute_defaults(self):
         super(OutVariation, self)._init_attribute_defaults()
         self.description = 'Variation entries'
-        self.attributes.update({'name':'',
-                                'extension':'',
-                                'nullok':False,
-                                'nulldefault':False})
-        self.qualifiers.update({'odirectory': '',
-                                'oformat': ''})
+        self.attributes.update({'name': '',
+                                'extension': '',
+                                'nullok': False,
+                                'nulldefault': False})
+        self.qualifiers.update({'odirectory': '', 'oformat': ''})
+
 
 PARAMETER_CLASSES['outvariation'] = OutVariation
+
 
 class OutXML(Parameter):
 
@@ -1055,14 +1482,15 @@ class OutXML(Parameter):
     def _init_attribute_defaults(self):
         super(OutXML, self)._init_attribute_defaults()
         self.description = 'XML'
-        self.attributes.update({'name':'',
-                                'extension':'',
-                                'nullok':False,
-                                'nulldefault':False})
-        self.qualifiers.update({'odirectory': '',
-                                'oformat': ''})
+        self.attributes.update({'name': '',
+                                'extension': '',
+                                'nullok': False,
+                                'nulldefault': False})
+        self.qualifiers.update({'odirectory': '', 'oformat': ''})
+
 
 PARAMETER_CLASSES['outxml'] = OutXML
+
 
 class ReportParameter(Parameter):
 
@@ -1073,10 +1501,10 @@ class ReportParameter(Parameter):
         self.description = 'Report output file'
         self.attributes.update({'multiple': False,
                                 'precision': 3,
-                                'type':'',
-                                'taglist':'',
-                                'nullok':False,
-                                'nulldefault':False})
+                                'type': '',
+                                'taglist': '',
+                                'nullok': False,
+                                'nulldefault': False})
         self.qualifiers.update({'rformat': '',
                                 'rname': '',
                                 'rextension': '',
@@ -1089,7 +1517,9 @@ class ReportParameter(Parameter):
                                 'rmaxall': 0,
                                 'rmaxseq': 0})
 
+
 PARAMETER_CLASSES['report'] = ReportParameter
+
 
 class SeqOutParameter(Parameter):
 
@@ -1101,67 +1531,9 @@ class SeqOutParameter(Parameter):
         self.attributes.update({'name': '',
                                 'extension': '',
                                 'features': False,
-                                'type':'',
-                                'nullok':False,
-                                'nulldefault':False})
-        self.qualifiers.update({'osformat':'',
-                                'osextension':'',
-                                'osname':'',
-                                'osdirectory':'',
-                                'osdbname':'',
-                                'ossingle':False,
-                                'oufo':'',
-                                'offormat':'',
-                                'ofname':'',
-                                'ofdirectory':''})
-
-PARAMETER_CLASSES['seqout'] = SeqOutParameter
-
-class SeqOutAllParameter(Parameter):
-
-    type = OUTPUT
-
-    def _init_attribute_defaults(self):
-        super(SeqOutAllParameter, self)._init_attribute_defaults()
-        self.description = 'Writeable sequence(s)'
-        self.attributes.update({'name': '',
-                                'extension': '',
-                                'features': False,
-                                'type':'',
-                                'minseqs': 1,
-                                'maxseqs': sys.maxint,
-                                'aligned': False,
-                                'nullok':False,
-                                'nulldefault':False})
-        self.qualifiers.update({'osformat': 'fasta',
-                                'osextension': '',
-                                'osname': '',
-                                'osdirectory': '',
-                                'osdbname': '',
-                                'ossingle': False,
-                                'oufo': '',
-                                'offormat': '',
-                                'ofname': '',
-                                'ofdirectory': ''})
-
-PARAMETER_CLASSES['seqoutall'] = SeqOutAllParameter
-
-class SeqOutSetParameter(Parameter):
-
-    type = OUTPUT
-
-    def _init_attribute_defaults(self):
-        super(SeqOutSetParameter, self)._init_attribute_defaults()
-        self.description = 'Writeable sequences'
-        self.attributes.update({'name': '',
-                                'extension': '',
-                                'features': False,
-                                'type':'',
-                                'minseqs': 1,
-                                'maxseqs': sys.maxint,
-                                'aligned': False,
-                                'nullok':False,
-                                'nulldefault':False})
+                                'type': '',
+                                'nullok': False,
+                                'nulldefault': False})
         self.qualifiers.update({'osformat': '',
                                 'osextension': '',
                                 'osname': '',
@@ -1173,7 +1545,71 @@ class SeqOutSetParameter(Parameter):
                                 'ofname': '',
                                 'ofdirectory': ''})
 
+
+PARAMETER_CLASSES['seqout'] = SeqOutParameter
+
+
+class SeqOutAllParameter(Parameter):
+
+    type = OUTPUT
+
+    def _init_attribute_defaults(self):
+        super(SeqOutAllParameter, self)._init_attribute_defaults()
+        self.description = 'Writeable sequence(s)'
+        self.attributes.update({'name': '',
+                                'extension': '',
+                                'features': False,
+                                'type': '',
+                                'minseqs': 1,
+                                'maxseqs': sys.maxint,
+                                'aligned': False,
+                                'nullok': False,
+                                'nulldefault': False})
+        self.qualifiers.update({'osformat': 'fasta',
+                                'osextension': '',
+                                'osname': '',
+                                'osdirectory': '',
+                                'osdbname': '',
+                                'ossingle': False,
+                                'oufo': '',
+                                'offormat': '',
+                                'ofname': '',
+                                'ofdirectory': ''})
+
+
+PARAMETER_CLASSES['seqoutall'] = SeqOutAllParameter
+
+
+class SeqOutSetParameter(Parameter):
+
+    type = OUTPUT
+
+    def _init_attribute_defaults(self):
+        super(SeqOutSetParameter, self)._init_attribute_defaults()
+        self.description = 'Writeable sequences'
+        self.attributes.update({'name': '',
+                                'extension': '',
+                                'features': False,
+                                'type': '',
+                                'minseqs': 1,
+                                'maxseqs': sys.maxint,
+                                'aligned': False,
+                                'nullok': False,
+                                'nulldefault': False})
+        self.qualifiers.update({'osformat': '',
+                                'osextension': '',
+                                'osname': '',
+                                'osdirectory': '',
+                                'osdbname': '',
+                                'ossingle': False,
+                                'oufo': '',
+                                'offormat': '',
+                                'ofname': '',
+                                'ofdirectory': ''})
+
+
 PARAMETER_CLASSES['seqoutset'] = SeqOutSetParameter
+
 
 class GraphParameter(Parameter):
 
@@ -1182,19 +1618,21 @@ class GraphParameter(Parameter):
     def _init_attribute_defaults(self):
         super(GraphParameter, self)._init_attribute_defaults()
         self.description = 'Graph device for a general graph'
-        self.attributes.update({'sequence':False,
-                                'nullok':False,
-                                'nulldefault':False,
+        self.attributes.update({'sequence': False,
+                                'nullok': False,
+                                'nulldefault': False,
                                 'gprompt': False,
-                                'gdesc':'',
-                                'gtitle':'',
-                                'gsubtitle':'',
-                                'gxtitle':'',
-                                'gytitle':'',
-                                'goutfile':'',
-                                'gdirectory':''})
+                                'gdesc': '',
+                                'gtitle': '',
+                                'gsubtitle': '',
+                                'gxtitle': '',
+                                'gytitle': '',
+                                'goutfile': '',
+                                'gdirectory': ''})
+
 
 PARAMETER_CLASSES['graph'] = GraphParameter
+
 
 class XYGraphParameter(Parameter):
 
@@ -1203,41 +1641,44 @@ class XYGraphParameter(Parameter):
     def _init_attribute_defaults(self):
         super(XYGraphParameter, self)._init_attribute_defaults()
         self.description = 'Graph device for a 2D graph'
-        self.attributes.update({'sequence':False,
-                                'multiple':1,
-                                'nullok':False,
-                                'nulldefault':False,
+        self.attributes.update({'sequence': False,
+                                'multiple': 1,
+                                'nullok': False,
+                                'nulldefault': False,
                                 'gprompt': False,
-                                'gdesc':'',
-                                'gtitle':'',
-                                'gsubtitle':'',
-                                'gxtitle':'',
-                                'gytitle':'',
-                                'goutfile':'',
-                                'gdirectory':''})
+                                'gdesc': '',
+                                'gtitle': '',
+                                'gsubtitle': '',
+                                'gxtitle': '',
+                                'gytitle': '',
+                                'goutfile': '',
+                                'gdirectory': ''})
+
 
 PARAMETER_CLASSES['xygraph'] = XYGraphParameter
+
 
 class PatternParameter(Parameter):
     def _init_attribute_defaults(self):
         super(PatternParameter, self)._init_attribute_defaults()
-        self.attributes.update({'minlength':1,
-                                'maxlength':sys.maxint,
-                                'maxsize':sys.maxint,
-                                'upper':False,
+        self.attributes.update({'minlength': 1,
+                                'maxlength': sys.maxint,
+                                'maxsize': sys.maxint,
+                                'upper': False,
                                 'lower': False,
-                                'type':'string',
-                                'pformat':'',
-                                'pmismatch':0,
-                                'pname':''})
+                                'type': 'string',
+                                'pformat': '',
+                                'pmismatch': 0,
+                                'pname': ''})
+
 
 PARAMETER_CLASSES['pattern'] = PatternParameter
+
 
 class AssemblyParameter(Parameter):
     def _init_attribute_defaults(self):
         super(AssemblyParameter, self)._init_attribute_defaults()
-        self.attributes.update({'entry': False,
-                                'nullok': False})
+        self.attributes.update({'entry': False, 'nullok': False})
         self.qualifiers.update({'cbegin': 0,
                                 'cend': 0,
                                 'iformat': '',
@@ -1245,19 +1686,22 @@ class AssemblyParameter(Parameter):
                                 'ioffset': '',
                                 'idbname': ''})
 
+
 PARAMETER_CLASSES['assembly'] = AssemblyParameter
+
 
 class RefseqParameter(Parameter):
     def _init_attribute_defaults(self):
         super(RefseqParameter, self)._init_attribute_defaults()
-        self.attributes.update({'entry': False,
-                                'nullok': False})
+        self.attributes.update({'entry': False, 'nullok': False})
         self.qualifiers.update({'iformat': '',
                                 'iquery': '',
                                 'ioffset': '',
                                 'idbname': ''})
 
+
 PARAMETER_CLASSES['refseq'] = RefseqParameter
+
 
 class RegexpParameter(Parameter):
     def _init_attribute_defaults(self):
@@ -1268,10 +1712,11 @@ class RegexpParameter(Parameter):
                                 'upper': False,
                                 'lower': False,
                                 'type': 'string'})
-        self.qualifiers.update({'pformat': '',
-                                'pname': ''})
+        self.qualifiers.update({'pformat': '', 'pname': ''})
+
 
 PARAMETER_CLASSES['regexp'] = RegexpParameter
+
 
 class ResourceParameter(Parameter):
     def _init_attribute_defaults(self):
@@ -1285,7 +1730,9 @@ class ResourceParameter(Parameter):
                                 'ioffset': '',
                                 'idbname': ''})
 
+
 PARAMETER_CLASSES['resource'] = ResourceParameter
+
 
 class TaxonParameter(Parameter):
     def _init_attribute_defaults(self):
@@ -1299,7 +1746,9 @@ class TaxonParameter(Parameter):
                                 'ioffset': '',
                                 'idbname': ''})
 
+
 PARAMETER_CLASSES['taxon'] = TaxonParameter
+
 
 class TextParameter(Parameter):
     def _init_attribute_defaults(self):
@@ -1313,15 +1762,18 @@ class TextParameter(Parameter):
                                 'ioffset': '',
                                 'idbname': ''})
 
+
 PARAMETER_CLASSES['text'] = TextParameter
+
 
 class TreeParameter(Parameter):
     def _init_attribute_defaults(self):
         super(TreeParameter, self)._init_attribute_defaults()
-        self.attributes.update({'size': 0,
-                                'nullok': False})
+        self.attributes.update({'size': 0, 'nullok': False})
+
 
 PARAMETER_CLASSES['tree'] = TreeParameter
+
 
 class URLParameter(Parameter):
     def _init_attribute_defaults(self):
@@ -1337,7 +1789,9 @@ class URLParameter(Parameter):
                                 'accession': '',
                                 'identifier': ''})
 
+
 PARAMETER_CLASSES['url'] = URLParameter
+
 
 class VariationParameter(Parameter):
     def _init_attribute_defaults(self):
@@ -1351,7 +1805,9 @@ class VariationParameter(Parameter):
                                 'ioffset': '',
                                 'idbname': ''})
 
+
 PARAMETER_CLASSES['variation'] = VariationParameter
+
 
 class XMLParameter(Parameter):
     def _init_attribute_defaults(self):
@@ -1361,10 +1817,13 @@ class XMLParameter(Parameter):
                                 'maxreads': sys.maxint,
                                 'nullok': False})
 
+
 PARAMETER_CLASSES['xml'] = XMLParameter
 
+
 def getParameter(name, datatype, properties):
-    return PARAMETER_CLASSES.get(datatype, Parameter)(name, datatype, properties)
+    return PARAMETER_CLASSES.get(datatype, Parameter)(name, datatype,
+                                                      properties)
 
 
 class Attribute(object):

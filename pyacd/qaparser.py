@@ -1,22 +1,25 @@
-from pyparsing import *
+from pyparsing import Optional, Suppress, Word, OneOrMore, ZeroOrMore, \
+    printables, Group, alphanums, alphas
+
+cl_parameter = Optional((Suppress('--') | Suppress('-')) + Word(
+    alphas)('name')) + Word(printables)('value')
+cl_parameters = OneOrMore(Group(cl_parameter(
+    'parameter')))('parameters')
+file_group = Suppress("FI") + Word(printables)('file') \
+                  + Optional(Suppress("FC") + Word(printables)('linecount')) \
+                  + ZeroOrMore(Suppress("FP") + Word(printables)('pattern'))
+qa = Suppress("ID") + Word(alphanums + '-')('id') + Suppress(
+    "AP") + Word(alphas)('application') \
+            + Suppress("CL") + cl_parameters('commandline') \
+            + ZeroOrMore(Group(file_group)('file'))('files')
 
 
-class QAParser(object):
-    def __init__(self):
-        self.cl_parameter = Optional((Suppress('--')|Suppress('-')) + Word(alphas)('name')) + Word(printables)('value')
-        self.cl_parameters = OneOrMore(Group(self.cl_parameter('parameter')))('parameters')
-        self.fileGroup = Suppress("FI") + Word(printables)('file') \
-                    + Optional(Suppress("FC") + Word(printables)('linecount')) \
-                    + ZeroOrMore(Suppress("FP") + Word(printables)('pattern'))
-        self.test = Suppress("ID") + Word(alphanums+'-')('id') + Suppress("AP") + Word(alphas)('application') \
-                    + Suppress("CL") + self.cl_parameters('commandline') \
-                    + ZeroOrMore(Group(self.fileGroup)('file'))('files')
+def parse_cl_parameter(string):
+    return cl_parameter.parseString(string)
 
-    def parse_cl_parameter(self, string):
-        return self.cl_parameter.parseString(string)
 
-    def parse_cl_parameters(self, string):
-        return self.cl_parameters.parseString(string)
+def parse_cl_parameters(string):
+    return cl_parameters.parseString(string)
 
-    def parse_test(self, string):
-        return self.test.parseString(string)
+def parse_qa(string):
+    return qa.parseString(string)

@@ -1,1 +1,1 @@
-Python API to parse and access EMBOSS ACD files
+CWL generator for ACD (EMBOSS) files.

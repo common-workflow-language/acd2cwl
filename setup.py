@@ -7,20 +7,20 @@ from setuptools import setup
 readme = open('README.md').read()
 
 setup(
-    name='pyacd',
+    name='acd2cwl',
     version='0.1',
-    description='python API to EMBOSS ACD files',
+    description='CWL generator for ACD files',
     long_description=readme,
     author='Hervé Ménager',
     author_email='hmenager@pasteur.fr',
-    url='https://github.com/hmenager/pyacd.git',
+    url='https://github.com/hmenager/acd2cwl.git',
     packages=['pyacd'],
     install_requires=[
-          'pyparsing'
+          'pyacd'
     ],
     license="BSD",
     entry_points={
-          'console_scripts': ['pyacd=pyacd:main'],
+          'console_scripts': ['acd2cwl=acd2cwl:main'],
         },
     tests_require=['nose'],
     test_suite='nose.collector',

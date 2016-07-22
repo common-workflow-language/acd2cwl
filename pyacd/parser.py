@@ -15,8 +15,8 @@ ATTRIBUTE.setParseAction(_get_attribute)
 ATTRIBUTES_LIST = Group(ZeroOrMore(ATTRIBUTE)).setResultsName('attributes')
 
 DATATYPE = oneOf(PARAMETER_CLASSES.keys())
-PARAMETER = Group(DATATYPE('datatype') + Suppress(":") + NAME('name') + Suppress("[") +
-                  ATTRIBUTES_LIST('properties') + Suppress("]"))
+PARAMETER = Group(DATATYPE('datatype') + Suppress(':') + NAME('name') + Suppress('[') +
+                  ATTRIBUTES_LIST('properties') + Suppress(']'))
 def _get_parameter(tokens):
     """ return Parameter object from tokens """
     token = tokens[0]
@@ -25,9 +25,9 @@ PARAMETER.setParseAction(_get_parameter)
 PARAMETERS_LIST = Group(ZeroOrMore(PARAMETER)).setResultsName('parameters')
 
 SECTION = Group(
-    Suppress("section:") + NAME('name') + Suppress("[")
-    + ATTRIBUTES_LIST('properties') + Suppress("]") + \
-    PARAMETERS_LIST('parameters') + Suppress("endsection:") + Suppress(NAME))
+    Suppress('section:') + NAME('name') + Suppress('[')
+    + ATTRIBUTES_LIST('properties') + Suppress(']') + \
+    PARAMETERS_LIST('parameters') + Suppress('endsection:') + Suppress(NAME))
 def _get_section(tokens):
     """ return Section object from tokens """
     token = tokens[0]
@@ -36,8 +36,8 @@ def _get_section(tokens):
 SECTION.setParseAction(_get_section)
 SECTIONS_LIST = Group(ZeroOrMore(SECTION))
 
-APPLICATION = Suppress("application") + ":" + NAME('name') + Suppress("[") \
-              + ATTRIBUTES_LIST('properties') + Suppress("]")
+APPLICATION = Suppress('application') + ':' + NAME('name') + Suppress('[') \
+              + ATTRIBUTES_LIST('properties') + Suppress(']')
 def _get_application(tokens):
     """ return Application object from tokens """
     return Application(tokens['name'], attributes=tokens['properties'])
@@ -45,7 +45,7 @@ APPLICATION.setParseAction(_get_application)
 
 ACD = APPLICATION('application') + SECTIONS_LIST('sections')
 # ignore ACD comments (starting with a '#')
-ACD.ignore("#" + restOfLine)
+ACD.ignore('#' + restOfLine)
 def _get_acd(token):
     """ return Acd object from tokens """
     return Acd(token['application'], token['sections'])

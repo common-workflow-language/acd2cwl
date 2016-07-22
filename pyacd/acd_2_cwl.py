@@ -1,5 +1,6 @@
 """
-  module to transform an ACD object into a CWL description (as a python dictionary)
+  module to transform an ACD object into a CWL description
+  (as a python dictionary)
 """
 import copy
 

@@ -4,7 +4,7 @@
 """
 import copy
 
-from .acd import PARAMETER_CLASSES, SEQUENCE_FORMATS, INPUT
+from pyacd.acd import PARAMETER_CLASSES, SEQUENCE_FORMATS, INPUT
 
 DATATYPES = {type_key: parameter_class.type for type_key, parameter_class
              in PARAMETER_CLASSES.iteritems()}

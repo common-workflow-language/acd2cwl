@@ -8,8 +8,8 @@ import argparse
 from ruamel.yaml import dump
 from pyparsing import ParseException
 
-from .parser import parse_acd
-from .acd import UnknownAcdPropertyException
+from pyacd.parser import parse_acd
+from pyacd.acd import UnknownAcdPropertyException
 from .acd_2_cwl import get_cwl
 
 

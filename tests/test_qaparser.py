@@ -22,11 +22,11 @@ class TestParser(unittest.TestCase):
         self.assertEqual(res.parameters[1].parameter.value, 'genbank')
 
     def test_parse_qa(self):
-        res = parse_qa("""
+        res = parse_qa('''
         ID qual-ufo
         AP seqret
         CL bam::../../data/samspec1.4example.bam -osformat sam stdout -auto
-        """)
+        ''')
         self.assertEqual(res.id, 'qual-ufo')
         self.assertEqual(res.application, 'seqret')
         self.assertEqual(res.commandline[0].parameter.name, '')

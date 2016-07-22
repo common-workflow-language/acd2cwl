@@ -1,25 +1,30 @@
+"""
+  parser module for EMBOSS QA files
+"""
 from pyparsing import Optional, Suppress, Word, OneOrMore, ZeroOrMore, \
     printables, Group, alphanums, alphas
 
-cl_parameter = Optional((Suppress('--') | Suppress('-')) + Word(
+CL_PARAMETER = Optional((Suppress('--') | Suppress('-')) + Word(
     alphas)('name')) + Word(printables)('value')
-cl_parameters = OneOrMore(Group(cl_parameter(
+CL_PARAMETERS = OneOrMore(Group(CL_PARAMETER(
     'parameter')))('parameters')
-file_group = Suppress("FI") + Word(printables)('file') \
-                  + Optional(Suppress("FC") + Word(printables)('linecount')) \
-                  + ZeroOrMore(Suppress("FP") + Word(printables)('pattern'))
-qa = Suppress("ID") + Word(alphanums + '-')('id') + Suppress(
+FILE_GROUP = Suppress("FI") + Word(printables)('file') \
+             + Optional(Suppress("FC") + Word(printables)('linecount')) \
+             + ZeroOrMore(Suppress("FP") + Word(printables)('pattern'))
+QA = Suppress("ID") + Word(alphanums + '-')('id') + Suppress(
     "AP") + Word(alphas)('application') \
-            + Suppress("CL") + cl_parameters('commandline') \
-            + ZeroOrMore(Group(file_group)('file'))('files')
+     + Suppress("CL") + CL_PARAMETERS('commandline') \
+     + ZeroOrMore(Group(FILE_GROUP)('file'))('files')
 
 
 def parse_cl_parameter(string):
-    return cl_parameter.parseString(string)
-
+    """ parse a parameter in a CL line """
+    return CL_PARAMETER.parseString(string)
 
 def parse_cl_parameters(string):
-    return cl_parameters.parseString(string)
+    """ parse a group of parameters in a CL line"""
+    return CL_PARAMETERS.parseString(string)
 
 def parse_qa(string):
-    return qa.parseString(string)
+    """ parse a QA test item (one test case for one application)"""
+    return QA.parseString(string)

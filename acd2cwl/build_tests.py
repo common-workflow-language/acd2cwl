@@ -1,7 +1,6 @@
 """
   main module to parse ACD files and generate CWL files
 """
-import sys
 import os
 import logging
 
@@ -13,7 +12,8 @@ from pyacd.parser import parse_acd
 from pyacd.acd import UnknownAcdPropertyException
 from pyacd.qaparser import parse_qa
 
-from acd2cwl.acd_2_cwl import get_cwl, DATATYPES_CWL
+from acd2cwl.acd_2_cwl import DATATYPES_CWL
+
 
 @click.command()
 @click.option('--outdir', help='test job files output directory')
@@ -34,12 +34,14 @@ def build(files, outdir, logfile, loglevel, qatestfile):
                 acd_object = parse_acd(open(acd_file, 'r').read())
                 acd_reference[acd_object.application.name] = acd_object
             except ParseException as pexc:
-                logging.error("Error while parsing file {0}: {1}".format(acd_file,
-                                                                      pexc))
+                logging.error(
+                    "Error while parsing file {0}: {1}".format(acd_file,
+                                                               pexc))
                 logging.exception(pexc)
             except UnknownAcdPropertyException as upexc:
-                logging.error("Error while parsing file {0}: {1}".format(acd_file,
-                                                             upexc.message))
+                logging.error(
+                    "Error while parsing file {0}: {1}".format(acd_file,
+                                                               upexc.message))
                 logging.exception(upexc)
     with click.progressbar(open(qatestfile, 'r').readlines(),
                            label='Preprocessing QA file') \
@@ -54,34 +56,36 @@ def build(files, outdir, logfile, loglevel, qatestfile):
                                                  'files for QA tests') as \
             qa_tests_array_progress:
         for qa_test_string in qa_tests_array_progress:
-            if qa_test_string.strip()=='':
-                #ignore empty chunks
+            if qa_test_string.strip() == '':
+                # ignore empty chunks
                 continue
             try:
                 qa_test = parse_qa(qa_test_string)
                 if qa_test.application_ref.name not in acd_reference:
                     continue
                 job_order = qa_test.parse_command_lines(acd_reference[
-                                                qa_test.application_ref.name])
+                    qa_test.application_ref.name])
                 cwl_job_order = {}
                 for key in job_order.keys():
                     parameter = acd_reference[
                         qa_test.application_ref.name].parameter_by_name(key)
-                    if DATATYPES_CWL[parameter.datatype].get('type')=='File':
-                        cwl_job_order[key]={'class':'File',
-                                            'path':job_order[key]['value']}
+                    if DATATYPES_CWL[parameter.datatype].get('type') == 'File':
+                        cwl_job_order[key] = {'class': 'File',
+                                              'path': job_order[key]['value']}
                     else:
                         cwl_job_order[key] = job_order[key]['value']
                     for qualifier in job_order[key].keys():
-                        if qualifier=='value':
+                        if qualifier == 'value':
                             continue
-                        cwl_job_order[qualifier]= job_order[key][qualifier]
+                        cwl_job_order[qualifier] = job_order[key][qualifier]
                 logging.info("writing test job order {0} for tool {1}".format(
                     qa_test.id, qa_test.application_ref.name))
-                dump(cwl_job_order, open(os.path.join(outdir,
-                                                        os.path.basename(
-                                                            qa_test.id) + '.yml'),
-                                           'w'), default_flow_style=False)
+                dump(
+                    cwl_job_order, open(
+                        os.path.join(
+                            outdir, os.path.basename(
+                                qa_test.id) + '.yml'), 'w'),
+                     default_flow_style=False)
             except Exception as exc:
                 logging.error("QA test parsing failed for:\n{0}".format(
                     qa_test_string))

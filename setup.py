@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import glob
 from setuptools import setup
 
 readme = open('README.md').read()
@@ -28,5 +27,5 @@ setup(
     tests_require=['nose'],
     test_suite='nose.collector',
     include_package_data=True,
-    zip_safe=False 
+    zip_safe=False
 )

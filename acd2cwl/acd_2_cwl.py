@@ -80,6 +80,18 @@ DATATYPES_CWL = {'array': {'type': 'array', 'item': 'int'},
                  'graph': {'type': 'File'},
                  'xygraph': {'type': 'File'}}
 
+USA_TYPE = {'type':'record',
+            'fields':[
+                {'type':'File',
+                 'name':'file'},
+                {'type':['string','null'],
+                 'name':'format'}
+            ]}
+
+DATATYPES_CWL['sequence'] = USA_TYPE
+DATATYPES_CWL['seqall'] = USA_TYPE
+
+
 NAMESPACES_AND_SCHEMAS = {'$namespaces':
                               {'dct': 'http://purl.org/dc/terms/',
                                'foaf': 'http://xmlns.com/foaf/0.1/',
@@ -170,7 +182,7 @@ def get_cwl(acd_def):
                 inputs.append(cwl_parameter)
             else:
                 outputs.append(cwl_parameter)
-    acd_cwl = {'cwlVersion': 'cwl:draft-3',
+    acd_cwl = {'cwlVersion': 'v1.0',
                'class': 'CommandLineTool',
                'baseCommand': [acd_def.application.name, '--auto'],
                'description': acd_def.application.attributes['documentation'],

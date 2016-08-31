@@ -17,13 +17,15 @@ from acd2cwl.acd_2_cwl import get_cwl, DATATYPES_CWL
 
 @click.command()
 @click.option('--outdir', help='test job files output directory')
+@click.option('--logfile', help='log file (by default logging to stderr)')
+@click.option('--loglevel', help='log level')
 @click.option('--qatestfile', help='test job files output directory')
 @click.argument('files', nargs=-1)
-def build(files, outdir, qatestfile):
+def build(files, outdir, logfile, loglevel, qatestfile):
     """
     subcommand to generate cwltool job orders from EMBOSS QA file
     """
-    logging.basicConfig(filename='a2c-tests.log', level=logging.DEBUG)
+    logging.basicConfig(filename=logfile or None, level=loglevel or None)
     with click.progressbar(files, label='Loading ACD files') \
             as acd_files:
         acd_reference = {}

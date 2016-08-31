@@ -1,1 +1,3 @@
 pyacd>=0.1
+ruamel.yaml
+click

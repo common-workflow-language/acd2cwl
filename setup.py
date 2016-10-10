@@ -16,8 +16,8 @@ setup(
     keywords=['EMBOSS','ACD','Common Workflow Language', 'CWL'],
     author='Hervé Ménager',
     author_email='hmenager@pasteur.fr',
-    url='https://github.com/hmenager/acd2cwl.git',
-    download_url='https://github.com/hmenager/acd2cwl/tarball/0.1',
+    url='https://github.com/hmenager/acd2cwl',
+    download_url='https://github.com/hmenager/acd2cwl',
     packages=['acd2cwl'],
     install_requires=[
         'click',

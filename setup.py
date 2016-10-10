@@ -10,7 +10,7 @@ readme = open(README).read()
 
 setup(
     name='acd2cwl',
-    version='0.1.1',
+    version='0.1.2',
     description='CWL generator for ACD files',
     long_description=readme,
     keywords=['EMBOSS','ACD','Common Workflow Language', 'CWL'],

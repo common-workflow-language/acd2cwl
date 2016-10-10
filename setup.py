@@ -10,7 +10,7 @@ setup(
     version='0.1',
     description='CWL generator for ACD files',
     long_description=readme,
-    keywords=['EMBOSS','ACD','Common Workflow Language', 'CWL']
+    keywords=['EMBOSS','ACD','Common Workflow Language', 'CWL'],
     author='Hervé Ménager',
     author_email='hmenager@pasteur.fr',
     url='https://github.com/hmenager/acd2cwl.git',

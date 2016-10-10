@@ -21,7 +21,7 @@ from acd2cwl.acd_2_cwl import DATATYPES_CWL
 @click.option('--loglevel', help='log level')
 @click.argument('qatestfile', nargs=1, help='test job files output directory')
 @click.argument('files', nargs=-1)
-def build(files, outdir, logfile, loglevel, qatestfile):
+def build(qatestfile, files, outdir, logfile, loglevel):
     """
     subcommand to generate cwltool job orders from EMBOSS QA file
     """

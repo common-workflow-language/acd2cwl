@@ -15,7 +15,7 @@ from acd2cwl.acd_2_cwl import get_cwl
 
 
 @click.command()
-@click.option('--outdir', help='CWL files output directory')
+@click.option('--outdir', help='CWL files output directory', default=os.getcwd)
 @click.option('--logfile', help='log file (by default logging to stderr)')
 @click.option('--loglevel', help='log level')
 @click.argument('files', nargs=-1)

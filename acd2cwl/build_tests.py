@@ -19,7 +19,7 @@ from acd2cwl.acd_2_cwl import DATATYPES_CWL
 @click.option('--outdir', help='test job files output directory', default=os.getcwd)
 @click.option('--logfile', help='log file (by default logging to stderr)')
 @click.option('--loglevel', help='log level')
-@click.option('--qatestfile', nargs=1, help='test job files output directory')
+@click.argument('qatestfile', nargs=1, help='test job files output directory')
 @click.argument('files', nargs=-1)
 def build(files, outdir, logfile, loglevel, qatestfile):
     """

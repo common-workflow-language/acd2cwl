@@ -16,7 +16,7 @@ from acd2cwl.acd_2_cwl import DATATYPES_CWL
 
 
 @click.command()
-@click.option('--outdir', help='test job files output directory')
+@click.option('--outdir', help='test job files output directory', default=os.getcwd)
 @click.option('--logfile', help='log file (by default logging to stderr)')
 @click.option('--loglevel', help='log level')
 @click.option('--qatestfile', help='test job files output directory')

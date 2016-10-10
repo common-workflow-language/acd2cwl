@@ -3,7 +3,9 @@
 
 from setuptools import setup
 
-readme = open('README.md').read()
+SETUP_DIR = os.path.dirname(__file__)
+README = os.path.join(SETUP_DIR, 'README.rst')
+readme = open(README).read()
 
 setup(
     name='acd2cwl',

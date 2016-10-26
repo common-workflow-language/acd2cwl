@@ -1,4 +1,4 @@
-CWL generator for ACD (EMBOSS) files.
+CWL generator for [ACD](http://emboss.sourceforge.net/developers/acd/) (EMBOSS) files.
 =====================================
 
 acd2cwl provides:

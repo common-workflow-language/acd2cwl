@@ -16,8 +16,8 @@ setup(
     keywords=['EMBOSS','ACD','Common Workflow Language', 'CWL'],
     author='Hervé Ménager',
     author_email='hmenager@pasteur.fr',
-    url='https://github.com/hmenager/acd2cwl',
-    download_url='https://github.com/hmenager/acd2cwl',
+    url='https://github.com/common-workflow-language/acd2cwl',
+    download_url='https://github.com/common-workflow-language/acd2cwl',
     packages=['acd2cwl'],
     install_requires=[
         'click',

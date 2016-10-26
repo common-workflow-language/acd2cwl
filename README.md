@@ -14,7 +14,7 @@ Installing the official package from PyPi:
 
 Or from source:
 `
-git clone https://github.com/hmenager/acd2cwl.git
+git clone https://github.com/common-workflow-language/acd2cwl.git
 cd acd2cwl && python setup.py install
 `
 

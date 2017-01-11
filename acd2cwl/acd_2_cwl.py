@@ -7,7 +7,7 @@ import copy
 from pyacd.acd import PARAMETER_CLASSES, SEQUENCE_FORMATS, INPUT
 
 DATATYPES = {type_key: parameter_class.type for type_key, parameter_class
-             in PARAMETER_CLASSES.iteritems()}
+             in PARAMETER_CLASSES.items()}
 
 DATATYPES_CWL = {'array': {'type': 'array', 'item': 'int'},
                  'boolean': {'type': 'boolean'},
@@ -138,7 +138,7 @@ def get_cwl(acd_def):
             cwl_parameter['description'] = parameter.attributes[
                 'help'] or cwl_parameter['label']
             # loop on parameter qualifiers
-            for name, default_value in parameter.qualifiers.iteritems():
+            for name, default_value in parameter.qualifiers.items():
                 qual_id = name + str(parameters_count)
                 if default_value == 0:
                     cwl_qual_parameter = copy.deepcopy(
@@ -153,7 +153,7 @@ def get_cwl(acd_def):
                 # cwl_qual_parameter['default'] = default_value
                 if name == 'osformat':
                     cwl_qual_parameter['type'] = {'type': 'enum',
-                                                  'symbols': OUTPUT_SEQUENCE_FORMATS.keys()}
+                                                  'symbols': list(OUTPUT_SEQUENCE_FORMATS.keys())}
                     # line below is a workaround to
                     # https://github.com/common-workflow-language/cwltool/issues/101
                     cwl_qual_parameter['type'][

@@ -3,7 +3,7 @@ python:
   - "2.7"
   - "3.5"
   - "3.6"
+before_install:
+  - sudo apt-get install -y emboss-test emboss-data
 # command to install dependencies
-install: "pip install -r requirements.txt"
-# command to run tests
-script: "python setup.py test && python setup.py install" 
+install: "pip install ."

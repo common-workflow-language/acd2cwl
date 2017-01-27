@@ -114,6 +114,7 @@ OUTPUT_SEQUENCE_FORMATS = {format_name: SEQUENCE_FORMATS[format_name] for format
                            in SEQUENCE_FORMATS.keys()
                            if SEQUENCE_FORMATS[format_name].get('output') is True}
 
+TYPE_MAP = {'int':'integer', 'float':'float', 'bool':'boolean', 'str':'string'}
 
 def get_cwl(acd_def):
     """
@@ -132,24 +133,20 @@ def get_cwl(acd_def):
             parameters_count += 1
             cwl_parameter = copy.deepcopy(DATATYPES_CWL[parameter.datatype])
             cwl_parameter['id'] = parameter.name
-            cwl_parameter['label'] = parameter.attributes['information'] \
+            cwl_parameter['label'] = parameter.attributes['information']['default_value'] \
                 if parameter.attributes['information'] != '' \
-                else parameter.attributes['prompt']
+                else parameter.attributes['prompt']['default_value']
             cwl_parameter['description'] = parameter.attributes[
-                'help'] or cwl_parameter['label']
+                'help']['default_value'] or cwl_parameter['label']
             # loop on parameter qualifiers
-            for name, default_value in parameter.qualifiers.items():
+            for name, definition in parameter.qualifiers.items():
                 qual_id = name + str(parameters_count)
-                if default_value == 0:
-                    cwl_qual_parameter = copy.deepcopy(
-                        DATATYPES_CWL['integer'])
-                elif isinstance(default_value, str):
-                    cwl_qual_parameter = copy.deepcopy(DATATYPES_CWL['string'])
-                elif default_value is False:
-                    cwl_qual_parameter = copy.deepcopy(
-                        DATATYPES_CWL['boolean'])
+                default_value = definition['default_value']
+                value_type = definition['value_type']
+                cwl_qual_parameter = copy.deepcopy(
+                        DATATYPES_CWL[TYPE_MAP[value_type]])
                 cwl_qual_parameter['id'] = qual_id
-                cwl_qual_parameter['label'] = name
+                cwl_qual_parameter['label'] = definition['description']
                 # cwl_qual_parameter['default'] = default_value
                 if name == 'osformat':
                     cwl_qual_parameter['type'] = {'type': 'enum',
@@ -192,7 +189,7 @@ def get_cwl(acd_def):
     acd_cwl = {'cwlVersion': 'v1.0',
                'class': 'CommandLineTool',
                'baseCommand': [acd_def.application.name, '--auto'],
-               'description': acd_def.application.attributes['documentation'],
+               'description': acd_def.application.attributes['documentation']['default_value'],
                'requirements': [{'class': 'InlineJavascriptRequirement'}],
                'doap:homepage': 'http://emboss.sf.net',
                'inputs': inputs,

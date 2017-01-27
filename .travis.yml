@@ -7,3 +7,4 @@ before_install:
   - sudo apt-get install -y emboss-test emboss-data
 # command to install dependencies
 install: "pip install --process-dependency-links ."
+script: a2c-tools --help && a2c-tests --help

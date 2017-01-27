@@ -23,7 +23,7 @@ setup(
         'click',
         'ruamel.yaml',
         'pyacd',
-        'cwlgen==0.1.0'
+        'cwlgen'
     ],
     dependency_links=['http://github.com/common-workflow-language/python-cwlgen/tarball/master#egg=cwlgen-0.1.0'],
     license='BSD',

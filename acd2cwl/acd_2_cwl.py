@@ -5,6 +5,8 @@
 import copy
 
 from pyacd.acd import PARAMETER_CLASSES, SEQUENCE_FORMATS, INPUT
+import cwlgen
+
 
 DATATYPES = {type_key: parameter_class.type for type_key, parameter_class
              in PARAMETER_CLASSES.items()}

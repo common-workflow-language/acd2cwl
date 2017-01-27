@@ -22,10 +22,12 @@ setup(
     install_requires=[
         'click',
         'ruamel.yaml',
-        'pyacd',
+        'pyacd == 0.2.0',
         'cwlgen == 0.1.0'
     ],
-    dependency_links=['http://github.com/common-workflow-language/python-cwlgen/tarball/master#egg=cwlgen-0.1.0'],
+    dependency_links=[
+        'http://github.com/common-workflow-language/python-cwlgen/tarball/master#egg=cwlgen-0.1.0'
+    ],
     license='BSD',
     entry_points={
           'console_scripts': ['a2c-tools=acd2cwl.build_tools:build',

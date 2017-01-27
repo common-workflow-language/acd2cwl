@@ -6,4 +6,4 @@ python:
 before_install:
   - sudo apt-get install -y emboss-test emboss-data
 # command to install dependencies
-install: "pip install ."
+install: "pip install --process-dependency-links ."

@@ -3,8 +3,10 @@ python:
   - "2.7"
   - "3.5"
   - "3.6"
+  - "3.7"
+  - "3.8"
 before_install:
   - sudo apt-get install -y emboss-test emboss-data
 # command to install dependencies
-install: "pip install --process-dependency-links ."
+install: "pip install ."
 script: a2c-tools --help && a2c-tests --help

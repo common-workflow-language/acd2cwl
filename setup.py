@@ -10,7 +10,7 @@ readme = open(README).read()
 
 setup(
     name='acd2cwl',
-    version='0.1.6',
+    version='0.1.7',
     description='CWL generator for ACD files',
     long_description=readme,
     keywords=['EMBOSS','ACD','Common Workflow Language', 'CWL'],
@@ -24,9 +24,6 @@ setup(
         'ruamel.yaml',
         'pyacd == 0.2.0',
         'cwlgen == 0.1.0'
-    ],
-    dependency_links=[
-        'http://github.com/common-workflow-language/python-cwlgen/tarball/master#egg=cwlgen-0.1.0'
     ],
     license='BSD',
     entry_points={

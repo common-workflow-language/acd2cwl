@@ -10,3 +10,6 @@ before_install:
 # command to install dependencies
 install: "pip install ."
 script: a2c-tools --help && a2c-tests --help
+branches:
+  only:
+    - master

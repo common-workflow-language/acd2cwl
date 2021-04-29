@@ -23,7 +23,7 @@ setup(
         'click',
         'ruamel.yaml',
         'pyacd == 0.2.0',
-        'cwlgen == 0.3.0'
+        'cwlgen == 0.4.2'
     ],
     license='BSD',
     entry_points={
